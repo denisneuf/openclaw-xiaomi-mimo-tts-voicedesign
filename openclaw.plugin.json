@@ -1,0 +1,20 @@
+{
+  "$schema": "../../docs/schemas/plugin.json",
+  "id": "xiaomi-voicedesign",
+  "name": "Xiaomi MiMo VoiceDesign",
+  "description": "Voice design TTS via Xiaomi MiMo V2.5 VoiceDesign model",
+  "kind": "plugin",
+  "entry": "index.mjs",
+  "homepage": "https://github.com/denisneuf/openclaw-xiaomi-mimo-tts-voicedesign",
+  "author": "denisneuf",
+  "license": "MIT",
+  "enabledByDefault": true,
+  "contracts": {
+    "speechProviders": ["xiaomi-voicedesign"]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}
