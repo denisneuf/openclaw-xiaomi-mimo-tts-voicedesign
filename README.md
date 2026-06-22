@@ -98,6 +98,41 @@ To watch in real time:
 tail -f /tmp/voicedesign-exec-log.txt
 ```
 
+Then activate with `/tts persona my-voice`.
+
+### `optimizeTextPreview` option
+
+By default `optimize_text_preview` is sent as `true` to the API, which may cause the API to modify or improve the text before speaking (adding/correcting words).
+
+To disable this (send the text exactly as written):
+
+```json
+"personas": {
+  "my-voice": {
+    "label": "My Custom Voice",
+    "providers": {
+      "xiaomi-voicedesign": {
+        "style": "Describe the voice...",
+        "optimizeTextPreview": false
+      }
+    }
+  }
+}
+```
+
+Or set it globally in the provider config:
+
+```json
+"providers": {
+  "xiaomi-voicedesign": {
+    "style": "...",
+    "optimizeTextPreview": false
+  }
+}
+```
+
+Default: `true` (backward compatible).
+
 Logs are **appended** — clear with:
 ```bash
 : > /tmp/voicedesign-exec-log.txt
