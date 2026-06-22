@@ -17,12 +17,57 @@ const DEFAULT_BASE_URL = "https://api.xiaomimimo.com/v1";
 const DEFAULT_STYLE = "Warm, natural, and friendly voice with clear pronunciation and conversational pacing.";
 const ENV_KEY = "XIAOMI_API_KEY";
 
+// Runtime toggle state — persists within the process
+let _optimizeTextPreview = undefined; // undefined → fallback to persona/provider config, then true
+
+function parseOptimizeArg(arg) {
+  const val = (arg || "").trim().toLowerCase();
+  if (val === "off" || val === "false" || val === "0") return false;
+  if (val === "on" || val === "true" || val === "1") return true;
+  return undefined; // unknown → status-only
+}
+
 export default definePluginEntry({
   id: PROVIDER_ID,
   name: "Xiaomi MiMo VoiceDesign",
   description: "Voice design TTS via Xiaomi MiMo V2.5 VoiceDesign model",
   register(api) {
     LOG("register() CALLED - api keys: " + Object.keys(api).join(", "));
+
+    // ── Plugin command: /vd optimize [on|off|status] ──
+    api.registerCommand({
+      name: "vd",
+      description: "Control VoiceDesign plugin settings. Usage: /vd optimize [on|off|status]",
+      acceptsArgs: true,
+      requireAuth: false,
+      handler(ctx) {
+        const args = (ctx.args || "").trim();
+        const parts = args.split(/\s+/);
+        const sub = parts[0]?.toLowerCase();
+
+        if (sub === "optimize") {
+          const newVal = parseOptimizeArg(parts[1]);
+          if (newVal === undefined) {
+            // status display
+            const current = _optimizeTextPreview === undefined
+              ? "default (true)"
+              : String(_optimizeTextPreview);
+            return {
+              text: `📢 VoiceDesign optimizeTextPreview: \`${current}\`\nToggle with \`/vd optimize on\` or \`/vd optimize off\``,
+            };
+          }
+          _optimizeTextPreview = newVal;
+          LOG(`Command: /vd optimize ${newVal}`);
+          return {
+            text: `✅ VoiceDesign optimizeTextPreview → \`${newVal}\``,
+          };
+        }
+
+        return {
+          text: `⚠️  Unknown subcommand: \`/vd ${sub || ""}\`\nUsage: \`/vd optimize [on|off|status]\``,
+        };
+      },
+    });
 
     api.registerSpeechProvider({
       id: PROVIDER_ID,
@@ -94,8 +139,10 @@ export default definePluginEntry({
           req.providerConfig?.format ||
           "mp3";
 
+        // Precedence: per-call override > persona/provider config > runtime toggle > default true
         const optimizeTextPreview = req.providerOverrides?.optimizeTextPreview ??
           req.providerConfig?.optimizeTextPreview ??
+          _optimizeTextPreview ??
           true;
 
         LOG("Resolved style: " + style);
