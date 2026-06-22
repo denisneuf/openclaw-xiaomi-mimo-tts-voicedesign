@@ -79,15 +79,40 @@ export default definePluginEntry({
 
       resolveConfig({ rawConfig }) {
         LOG("resolveConfig called, rawConfig: " + JSON.stringify(rawConfig));
+
+        // 1. Find the active persona config
+        const activePersonaName = rawConfig?.persona;
+        const personaEntry = activePersonaName
+          ? rawConfig?.personas?.[activePersonaName]
+          : undefined;
+        const personaProviderConfig = personaEntry
+          ? personaEntry?.providers?.[PROVIDER_ID]
+          : undefined;
+
+        // 2. Global provider config (rawConfig[PROVIDER_ID])
+        const globalProviderConfig = rawConfig?.[PROVIDER_ID] || {};
+
+        // 3. Merge: persona takes precedence over global
+        const merged = { ...globalProviderConfig, ...personaProviderConfig };
+
+        // 4. Resolve style: merged > rawConfig direct > personaStyle/voiceStyle > default
         const style =
+          merged?.style ||
           rawConfig?.style ||
-          rawConfig?.[PROVIDER_ID]?.style ||
-          rawConfig?.providers?.[PROVIDER_ID]?.style ||
           rawConfig?.voiceStyle ||
           rawConfig?.personaStyle ||
           DEFAULT_STYLE;
-        const model = rawConfig?.model || rawConfig?.[PROVIDER_ID]?.model || DEFAULT_MODEL;
+
+        const model = merged?.model || DEFAULT_MODEL;
+
+        // 5. Pass through all fields from merged config (optimizeTextPreview, format, etc.)
         const result = { model, style };
+        for (const key of Object.keys(merged)) {
+          if (key !== "model" && key !== "style") {
+            result[key] = merged[key];
+          }
+        }
+
         LOG("resolveConfig returns: " + JSON.stringify(result));
         return result;
       },

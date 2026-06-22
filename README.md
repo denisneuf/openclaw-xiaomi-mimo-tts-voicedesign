@@ -61,28 +61,39 @@ api-key: <XIAOMI_API_KEY>
     { "role": "user", "content": "<style description>" },
     { "role": "assistant", "content": "<text to speak>" }
   ],
-  "audio": { "format": "mp3", "optimize_text_preview": true }
+  "audio": {
+    "format": "mp3",
+    "optimize_text_preview": true   <-- false to keep text verbatim
+  }
 }
 ```
 
-## Configuration precedence
+## Configuration resolution (`resolveConfig`)
 
-The plugin resolves the voice style in this order:
-1. `req.providerOverrides?.style` – per-call override (highest priority)
-2. `req.providerConfig?.style` – resolved config from the persona/provider definition
-3. `req.personaConfig?.style` – fallback if passed separately by the framework
-4. `DEFAULT_STYLE` – built-in fallback
+The `resolveConfig` hook receives the full TTS config block as `rawConfig`. The plugin
+**merges** two sources — persona-first, then falls back to the global provider config:
 
-### `resolveConfig` note
+1. **Persona config:** `rawConfig.personas[activePersona].providers.xiaomi-voicedesign`
+2. **Global provider config:** `rawConfig["xiaomi-voicedesign"]` (provider-specific key at root)
+3. **Legacy fallbacks:** `rawConfig.style`, `rawConfig.voiceStyle`, `rawConfig.personaStyle`
+4. **Built-in default:** `DEFAULT_STYLE`
 
-The `resolveConfig` hook receives the full TTS config block from OpenClaw as `rawConfig`. Provider-specific settings are nested under `rawConfig["xiaomi-voicedesign"]` (or `rawConfig.providers["xiaomi-voicedesign"]`), **not** at `rawConfig.style`.
+**Persona values override global values** (spread merge).
 
-Precedence used by `resolveConfig`:
-1. `rawConfig?.style` – top-level (usually unset)
-2. `rawConfig?.[PROVIDER_ID]?.style` – provider-specific key at root
-3. `rawConfig?.providers?.[PROVIDER_ID]?.style` – nested under providers
-4. `rawConfig?.voiceStyle` / `rawConfig?.personaStyle` – legacy keys
-5. `DEFAULT_STYLE` – fallback
+### Field pass-through
+
+`resolveConfig` returns **all fields** from the merged config, not just `model` + `style`.
+This means you can set any extra field (e.g. `optimizeTextPreview`, `format`, `baseUrl`)
+in either the persona or the global provider config and it will be passed to the `synthesize()`
+call as `req.providerConfig`.
+
+### Precedence in `synthesize()`
+
+Once merged, the plugin resolves each parameter with this order (highest first):
+1. `req.providerOverrides?.<field>` — per-call override (set by the framework)
+2. `req.providerConfig?.<field>` — the merged result from `resolveConfig`
+3. `_<field>RuntimeToggle` — in-process toggle (e.g. `/vd optimize off`)
+4. Built-in default
 
 ## Debug logging
 
@@ -97,8 +108,6 @@ To watch in real time:
 ```bash
 tail -f /tmp/voicedesign-exec-log.txt
 ```
-
-Then activate with `/tts persona my-voice`.
 
 ### `optimizeTextPreview` option
 
@@ -140,8 +149,28 @@ Logs are **appended** — clear with:
 
 ## Known issues
 
-- The first `resolveConfig()` call after gateway start may use cached module code even after `SIGUSR1` reload. Use a full process restart (`kill -9`) if debugging config resolution.
+- OpenClaw's `SIGUSR1` graceful restart does **not** reload plugin modules. After changing plugin code, use a full kill+start: `kill <pid> && openclaw gateway start`.
 - Temporary audio files may be left in `/private/tmp/openclaw/tts-*/` if the gateway process is killed without cleanup.
+
+## Changelog
+
+### 2026-06-22 — `resolveConfig` persona-aware merge + field pass-through
+
+**Bug fix:** `resolveConfig` was reading only the global provider config (`rawConfig["xiaomi-voicedesign"]`),
+ignoring the active persona's provider-specific config. This meant all personas using
+`xiaomi-voicedesign` would get the same style (the one from the global provider config).
+
+**Fix:**
+- `resolveConfig` now looks up the active persona via `rawConfig.persona`,
+  reads `rawConfig.personas[activePersona].providers.xiaomi-voicedesign`,
+  and merges it with the global provider config (persona values win).
+- All merged fields are passed through in the return value, not just `model` + `style`.
+  This allows `optimizeTextPreview`, `format`, `baseUrl` (etc.) to be set per-persona
+  or globally and actually take effect in `synthesize()`.
+
+**Config change (recommended):** Add `"optimizeTextPreview": false` to the global
+provider config `messages.tts.providers.xiaomi-voicedesign` to disable text
+optimization by default.
 
 ## License
 
