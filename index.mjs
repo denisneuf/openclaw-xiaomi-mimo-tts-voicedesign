@@ -164,10 +164,11 @@ export default definePluginEntry({
           req.providerConfig?.format ||
           "mp3";
 
-        // Precedence: per-call override > persona/provider config > runtime toggle > default true
+        // Precedence: providerOverrides > runtime toggle (/vd optimize) > personaConfig (/tts persona) > providerConfig (JSON) > default true
         const optimizeTextPreview = req.providerOverrides?.optimizeTextPreview ??
+          (_optimizeTextPreview !== undefined ? _optimizeTextPreview : undefined) ??
+          req.personaConfig?.optimizeTextPreview ??
           req.providerConfig?.optimizeTextPreview ??
-          _optimizeTextPreview ??
           true;
 
         LOG("Resolved style: " + style);
