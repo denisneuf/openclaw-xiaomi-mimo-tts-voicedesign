@@ -94,9 +94,14 @@ export default definePluginEntry({
           req.providerConfig?.format ||
           "mp3";
 
+        const optimizeTextPreview = req.providerOverrides?.optimizeTextPreview ??
+          req.providerConfig?.optimizeTextPreview ??
+          true;
+
         LOG("Resolved style: " + style);
         LOG("Resolved model: " + model);
         LOG("Resolved format: " + format);
+        LOG("Resolved optimizeTextPreview: " + optimizeTextPreview);
 
         const body = {
           model,
@@ -104,7 +109,7 @@ export default definePluginEntry({
             { role: "user", content: style },
             { role: "assistant", content: req.text },
           ],
-          audio: { format, optimize_text_preview: true },
+          audio: { format, optimize_text_preview: optimizeTextPreview },
         };
 
         LOG("PAYLOAD: " + JSON.stringify(body));
