@@ -109,27 +109,49 @@ To watch in real time:
 tail -f /tmp/voicedesign-exec-log.txt
 ```
 
-### `optimizeTextPreview` option
+## Plugin commands
+
+### `/vd optimize [on|off|status]`
+
+Toggle `optimizeTextPreview` at runtime without editing JSON config.
+
+- `on` — enable text optimization (default behavior)
+- `off` — disable (text spoken exactly as written; critical for character voices with intentional accents)
+- `status` or no argument — show current state
+
+**Precedence (highest first):**
+1. Per-call override (`providerOverrides`)
+2. Runtime toggle (`/vd optimize`)
+3. Persona config (`personas.<name>.providers.xiaomi-voicedesign.optimizeTextPreview`)
+4. Global provider config (`providers.xiaomi-voicedesign.optimizeTextPreview`)
+5. Default: `true`
+
+### `/vd dialogue persona:: text || persona:: text [...]`
+
+Generate a multi-voice dialogue from a single command. Each segment specifies a persona name and text, separated by `||`. The persona name and text within a segment are separated by `::`.
+
+**Format:**
+```
+/vd dialogue persona1:: Hello there || persona2:: Hey, how's it going? || persona1:: Not bad!
+```
+
+**How it works:**
+1. Reads persona styles from `openclaw.json`
+2. Sends each segment to the MiMo API independently, using each persona's voice style
+3. Concatenates the MP3 outputs into a single audio file
+4. Strips ID3 headers from all segments after the first for seamless playback
+5. Saves the result to `/tmp/voicedesign-dialogue-<timestamp>.mp3`
+
+**Requirements:**
+- At least 2 segments
+- Each persona must be defined in `messages.tts.personas` in `openclaw.json`
+- All personas must use the `xiaomi-voicedesign` provider
+
+### `ensureTextPreview` config option
 
 By default `optimize_text_preview` is sent as `true` to the API, which may cause the API to modify or improve the text before speaking (adding/correcting words).
 
-To disable this (send the text exactly as written):
-
-```json
-"personas": {
-  "my-voice": {
-    "label": "My Custom Voice",
-    "providers": {
-      "xiaomi-voicedesign": {
-        "style": "Describe the voice...",
-        "optimizeTextPreview": false
-      }
-    }
-  }
-}
-```
-
-Or set it globally in the provider config:
+To disable this globally:
 
 ```json
 "providers": {
@@ -140,7 +162,36 @@ Or set it globally in the provider config:
 }
 ```
 
-Default: `true` (backward compatible).
+Or per-persona:
+
+```json
+"personas": {
+  "my-voice": {
+    "providers": {
+      "xiaomi-voicedesign": {
+        "style": "...",
+        "optimizeTextPreview": false
+      }
+    }
+  }
+}
+```
+
+Use `/vd optimize` to toggle at runtime without editing JSON.
+
+## Debug logging
+
+The plugin logs to `/tmp/voicedesign-exec-log.txt`:
+- Module load and registration
+- `resolveConfig` input/output (full rawConfig JSON)
+- `synthesize` call details (text, providerConfig, overrides, personaConfig)
+- Exact API payload sent
+- API response status and audio size
+
+Tail in real time:
+```bash
+tail -f /tmp/voicedesign-exec-log.txt
+```
 
 Logs are **appended** — clear with:
 ```bash
@@ -154,7 +205,19 @@ Logs are **appended** — clear with:
 
 ## Changelog
 
-### 2026-06-22 — `resolveConfig` persona-aware merge + field pass-through
+### v1.1.0 (2026-06-23) — `/vd dialogue` + command docs
+
+**New features:**
+- `/vd dialogue persona:: text || persona:: text [...]` — generate multi-voice dialogues from a single command. Reads persona styles from `openclaw.json`, fetches each segment from MiMo independently, concatenates MP3 outputs.
+- Full plugin command documentation in README.
+
+**Fixes:**
+- `resolveConfig` now returns all merged fields (not just `model` + `style`), so `optimizeTextPreview`, `format`, `baseUrl`, etc. work per-persona.
+- `synthesize()` properly reads `optimizeTextPreview` from persona-level config.
+
+---
+
+### v1.0.1 (2026-06-22) — `resolveConfig` persona-aware merge + field pass-through
 
 **Bug fix:** `resolveConfig` was reading only the global provider config (`rawConfig["xiaomi-voicedesign"]`),
 ignoring the active persona's provider-specific config. This meant all personas using

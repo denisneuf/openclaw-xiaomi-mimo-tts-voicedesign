@@ -1,5 +1,7 @@
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
-import { appendFileSync } from "node:fs";
+import { appendFileSync, writeFileSync, readFileSync } from "node:fs";
+import path from "node:path";
+import os from "node:os";
 
 const LOG = (msg) => {
   try {
@@ -63,8 +65,124 @@ export default definePluginEntry({
           };
         }
 
+        if (sub === "dialogue") {
+          // Parse: persona:: text || persona:: text || persona:: text...
+          const fullText = parts.slice(1).join(" ");
+          LOG("dialogue: fullText=" + fullText.substring(0, 200));
+          const segments = [];
+          const rawParts = fullText.split("||");
+          LOG("dialogue: rawParts count=" + rawParts.length);
+          for (let ri = 0; ri < rawParts.length; ri++) {
+            const s = rawParts[ri].trim();
+            LOG("dialogue: rawPart[" + ri + "]=" + s.substring(0, 80));
+            const sepIdx = s.indexOf("::");
+            if (sepIdx > 0) {
+              segments.push({ persona: s.substring(0, sepIdx).trim(), text: s.substring(sepIdx + 2).trim() });
+            }
+          }
+          LOG("dialogue: segments found=" + segments.length);
+
+          if (segments.length < 2) {
+            return { text: `⚠️  Dialogue needs at least 2 segments (found ${segments.length}).\nfullText: ${fullText.substring(0, 200)}` };
+          }
+
+          // Read config to lookup persona styles
+          const CONFIG_PATH = path.resolve(os.homedir(), ".openclaw/openclaw.json");
+          let personas = {};
+          let globalStyle = DEFAULT_STYLE;
+          try {
+            const config = JSON.parse(readFileSync(CONFIG_PATH, "utf8"));
+            personas = config.messages?.tts?.personas || {};
+            globalStyle = config.messages?.tts?.providers?.[PROVIDER_ID]?.style || DEFAULT_STYLE;
+          } catch (e) {
+            LOG("dialogue: failed to read config: " + e.message);
+          }
+
+          const apiKey = process.env[ENV_KEY];
+          if (!apiKey) {
+            return { text: `❌ ${ENV_KEY} not set` };
+          }
+
+          // This handler needs to be async for fetch. We'll do a sync approach with a warning.
+          // Actually let's return a promise - OpenClaw should support async handlers.
+          return (async () => {
+            const buffers = [];
+            const errors = [];
+
+            for (let i = 0; i < segments.length; i++) {
+              const seg = segments[i];
+              const style = personas[seg.persona]?.providers?.[PROVIDER_ID]?.style || globalStyle;
+
+              try {
+                LOG(`dialogue segment ${i+1}: [${seg.persona}] ${seg.text.substring(0,60)}`);
+                
+                const body = {
+                  model: DEFAULT_MODEL,
+                  messages: [
+                    { role: "user", content: style },
+                    { role: "assistant", content: seg.text }
+                  ],
+                  audio: { format: "mp3", optimize_text_preview: false }
+                };
+
+                const response = await fetch(`${DEFAULT_BASE_URL}/chat/completions`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", "api-key": apiKey },
+                  body: JSON.stringify(body),
+                  signal: AbortSignal.timeout(30_000),
+                });
+
+                if (!response.ok) {
+                  const t = await response.text().catch(() => "");
+                  errors.push(`seg ${i+1} (${seg.persona}): HTTP ${response.status}`);
+                  continue;
+                }
+
+                const json = await response.json();
+                const audioData = json?.choices?.[0]?.message?.audio?.data;
+                if (!audioData) {
+                  errors.push(`seg ${i+1}: no audio data`);
+                  continue;
+                }
+
+                buffers.push(Buffer.from(audioData, "base64"));
+
+              } catch (e) {
+                errors.push(`seg ${i+1} (${seg.persona}): ${e.message}`);
+              }
+            }
+
+            if (buffers.length === 0) {
+              return { text: `❌ Dialogue failed: ${errors.join("; ")}` };
+            }
+
+            // Concatenate MP3: strip ID3v2 from all segments after the first
+            const cleanBuffers = [buffers[0]];
+            for (let i = 1; i < buffers.length; i++) {
+              let b = buffers[i];
+              if (b.length > 10 && b.slice(0, 3).toString() === "ID3") {
+                const size = ((b[6] & 0x7f) << 21) | ((b[7] & 0x7f) << 14) | ((b[8] & 0x7f) << 7) | (b[9] & 0x7f);
+                b = b.subarray(10 + size);
+              }
+              cleanBuffers.push(b);
+            }
+
+            const combined = Buffer.concat(cleanBuffers);
+            const outPath = path.join(os.tmpdir(), `voicedesign-dialogue-${Date.now()}.mp3`);
+            writeFileSync(outPath, combined);
+
+            LOG(`dialogue complete: ${buffers.length} segments, ${combined.length} bytes → ${outPath}`);
+
+            let msg = `✅ Dialogue generated (${buffers.length} segments, ${combined.length} bytes)\n📁 ${outPath}`;
+            if (errors.length) {
+              msg += `\n⚠️ ${errors.length} error(s): ${errors.join("; ")}`;
+            }
+            return { text: msg };
+          })();
+        }
+
         return {
-          text: `⚠️  Unknown subcommand: \`/vd ${sub || ""}\`\nUsage: \`/vd optimize [on|off|status]\``,
+          text: `⚠️  Unknown subcommand: \`/vd ${sub || ""}\`\nUsage: \`/vd optimize [on|off|status] | /vd dialogue [persona] text | [persona] text\``,
         };
       },
     });

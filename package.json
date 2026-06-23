@@ -1,6 +1,6 @@
 {
   "name": "openclaw-xiaomi-mimo-tts-voicedesign",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Xiaomi MiMo V2.5 TTS VoiceDesign plugin for OpenClaw",
   "type": "module",
   "license": "MIT",
