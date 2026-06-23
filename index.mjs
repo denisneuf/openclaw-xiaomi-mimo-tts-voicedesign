@@ -1,5 +1,5 @@
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
-import { appendFileSync, writeFileSync, readFileSync } from "node:fs";
+import { appendFileSync, writeFileSync, readFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
@@ -67,8 +67,29 @@ export default definePluginEntry({
 
         if (sub === "dialogue") {
           // Parse: persona:: text || persona:: text || persona:: text...
-          const fullText = parts.slice(1).join(" ");
+          // Optional flags: --title <name> --out <dir>
+          let fullText = parts.slice(1).join(" ");
+          let dialogueTitle = "";
+          let outDir = "";
+
+          // Extract --title <name>
+          const titleMatch = fullText.match(/--title\s+([^\s]+)/);
+          if (titleMatch) {
+            dialogueTitle = titleMatch[1].replace(/[^a-zA-Z0-9_-]/g, "_");
+            fullText = fullText.replace(/--title\s+[^\s]+/, "").trim();
+          }
+
+          // Extract --out <path>
+          const outMatch = fullText.match(/--out\s+(\S+)/);
+          if (outMatch) {
+            const rawPath = outMatch[1];
+            outDir = rawPath.startsWith("~") ? path.resolve(os.homedir(), rawPath.slice(1)) : path.resolve(rawPath);
+            fullText = fullText.replace(/--out\s+\S+/, "").trim();
+          }
+
           LOG("dialogue: fullText=" + fullText.substring(0, 200));
+          if (dialogueTitle) LOG("dialogue: title=" + dialogueTitle);
+          if (outDir) LOG("dialogue: outDir=" + outDir);
           const segments = [];
           const rawParts = fullText.split("||");
           LOG("dialogue: rawParts count=" + rawParts.length);
@@ -111,6 +132,19 @@ export default definePluginEntry({
             const ts = Date.now();
             const segFiles = [];
 
+            // Resolve output directory and file prefix
+            const outputDir = outDir || os.tmpdir();
+            const filePrefix = dialogueTitle || `voicedesign-dialogue-${ts}`;
+
+            // Ensure output directory exists
+            if (outDir) {
+              try {
+                mkdirSync(outDir, { recursive: true });
+              } catch (e) {
+                LOG("dialogue: mkdir warning: " + e.message);
+              }
+            }
+
             for (let i = 0; i < segments.length; i++) {
               const seg = segments[i];
               const style = personas[seg.persona]?.providers?.[PROVIDER_ID]?.style || globalStyle;
@@ -152,7 +186,7 @@ export default definePluginEntry({
 
                 // Save individual segment file
                 const safeName = seg.persona.replace(/[^a-zA-Z0-9_-]/g, "_");
-                const segPath = path.join(os.tmpdir(), `voicedesign-dialogue-${ts}-seg${i+1}-${safeName}.mp3`);
+                const segPath = path.join(outputDir, `${filePrefix}-seg${i+1}-${safeName}.mp3`);
                 writeFileSync(segPath, buf);
                 segFiles.push(segPath);
 
@@ -177,7 +211,7 @@ export default definePluginEntry({
             }
 
             const combined = Buffer.concat(cleanBuffers);
-            const outPath = path.join(os.tmpdir(), `voicedesign-dialogue-${ts}.mp3`);
+            const outPath = path.join(outputDir, `${filePrefix}-dialogue.mp3`);
             writeFileSync(outPath, combined);
 
             LOG(`dialogue complete: ${buffers.length} segments, ${combined.length} bytes → ${outPath}`);
@@ -195,7 +229,7 @@ export default definePluginEntry({
         }
 
         return {
-          text: `⚠️  Unknown subcommand: \`/vd ${sub || ""}\`\nUsage: \`/vd optimize [on|off|status] | /vd dialogue [persona] text | [persona] text\``,
+          text: `⚠️  Unknown subcommand: \`/vd ${sub || ""}\`\nUsage: \`/vd optimize [on|off|status]\` | \`/vd dialogue persona:: text || persona:: text [... --title <name> --out <dir>]\``,
         };
       },
     });
