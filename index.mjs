@@ -108,6 +108,8 @@ export default definePluginEntry({
           return (async () => {
             const buffers = [];
             const errors = [];
+            const ts = Date.now();
+            const segFiles = [];
 
             for (let i = 0; i < segments.length; i++) {
               const seg = segments[i];
@@ -145,7 +147,14 @@ export default definePluginEntry({
                   continue;
                 }
 
-                buffers.push(Buffer.from(audioData, "base64"));
+                const buf = Buffer.from(audioData, "base64");
+                buffers.push(buf);
+
+                // Save individual segment file
+                const safeName = seg.persona.replace(/[^a-zA-Z0-9_-]/g, "_");
+                const segPath = path.join(os.tmpdir(), `voicedesign-dialogue-${ts}-seg${i+1}-${safeName}.mp3`);
+                writeFileSync(segPath, buf);
+                segFiles.push(segPath);
 
               } catch (e) {
                 errors.push(`seg ${i+1} (${seg.persona}): ${e.message}`);
@@ -168,12 +177,16 @@ export default definePluginEntry({
             }
 
             const combined = Buffer.concat(cleanBuffers);
-            const outPath = path.join(os.tmpdir(), `voicedesign-dialogue-${Date.now()}.mp3`);
+            const outPath = path.join(os.tmpdir(), `voicedesign-dialogue-${ts}.mp3`);
             writeFileSync(outPath, combined);
 
             LOG(`dialogue complete: ${buffers.length} segments, ${combined.length} bytes → ${outPath}`);
 
-            let msg = `✅ Dialogue generated (${buffers.length} segments, ${combined.length} bytes)\n📁 ${outPath}`;
+            let msg = `✅ Dialogue generated (${buffers.length}/${segments.length} segments)\n`;
+            msg += `📁 ${outPath} (${(combined.length / 1024).toFixed(0)} KB)\n`;
+            for (let si = 0; si < segFiles.length; si++) {
+              msg += `   ${path.basename(segFiles[si])} (${(buffers[si].length / 1024).toFixed(0)} KB)\n`;
+            }
             if (errors.length) {
               msg += `\n⚠️ ${errors.length} error(s): ${errors.join("; ")}`;
             }
