@@ -83,7 +83,7 @@ export default definePluginEntry({
           const outMatch = fullText.match(/--out\s+(\S+)/);
           if (outMatch) {
             const rawPath = outMatch[1];
-            outDir = rawPath.startsWith("~") ? path.resolve(os.homedir(), rawPath.slice(1)) : path.resolve(rawPath);
+            outDir = rawPath.startsWith("~") ? path.resolve(os.homedir(), rawPath.replace(/^~\//, "")) : path.resolve(rawPath);
             fullText = fullText.replace(/--out\s+\S+/, "").trim();
           }
 
