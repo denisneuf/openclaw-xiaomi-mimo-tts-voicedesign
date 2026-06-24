@@ -34,16 +34,14 @@
   }
   .tag-voicedesign { background: rgba(255, 87, 34, 0.2); color: #ff5722; }
   .tag-dialogue { background: rgba(156, 39, 176, 0.2); color: #ce93d8; }
-  .tag-tts { background: rgba(76, 175, 80, 0.2); color: #81c784; }
-  .tag-asr { background: rgba(33, 150, 243, 0.2); color: #64b5f6; }
+  .tag-fix { background: rgba(76, 175, 80, 0.2); color: #81c784; }
   .section-label {
     font-size: 1.3rem; font-weight: 600; margin: 2rem 0 1rem;
     padding-bottom: 0.3rem; border-bottom: 2px solid var(--accent);
   }
   .section-label.lvvd { border-color: #ff5722; color: #ff5722; }
   .section-label.ldialogue { border-color: #ce93d8; color: #ce93d8; }
-  .section-label.ltts { border-color: #81c784; color: #81c784; }
-  .section-label.lasr { border-color: #64b5f6; color: #64b5f6; }
+  .section-label.lfix { border-color: #81c784; color: #81c784; }
 </style>
 </head>
 <body>
@@ -87,6 +85,26 @@
       <span>43 KB HTML</span>
       <span>78 audio samples</span>
       <span>11 personas</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FIX DEMO -->
+<!-- ============================================================ -->
+<div class="section-label lfix">🐛 MP3 Concatenation Fix</div>
+
+<div class="grid">
+  <div class="example-card" style="border-left: 3px solid #4caf50;">
+    <h3><a href="dialogue-wizardtest.html">🧙 Wizard Test — v1.4.1</a></h3>
+    <div class="example-desc">
+      <strong>Before/after comparison</strong> — Demos the ffmpeg concat fix.
+      3 segments &middot; Gandalf, Russian, ASMR.
+      Old method: player showed 9.28s. New method: correct 28.27s.
+    </div>
+    <div class="example-meta">
+      <span class="meta-tag tag-fix">v1.4.1 fix</span>
+      <span>183 KB audio</span>
     </div>
   </div>
 </div>
@@ -189,8 +207,6 @@
     </div>
   </div>
 </div>
-
-
 
 <div class="footer">
   Generated from OpenClaw canvas demos &middot;

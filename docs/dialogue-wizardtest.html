@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizard Test — Diálogo de prueba v1.4.1</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .tag-lotr { background: rgba(156,39,176,0.2); color: #ce93d8; }
+  .tag-russian { background: rgba(33,150,243,0.2); color: #64b5f6; }
+  .tag-female { background: rgba(233,30,99,0.2); color: #f06292; }
+  .tag-false { background: rgba(76,175,80,0.2); color: #81c784; }
+  .tag-fix { background: rgba(76,175,80,0.2); color: #4caf50; }
+  .log-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 0.8rem; font-family: monospace; font-size: 0.78rem; line-height: 1.5; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  .badge-fix { display: inline-block; background: #4caf50; color: #000; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; }
+  .comparison { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+  .comparison > .card { flex: 1; min-width: 260px; }
+  .duration-big { font-size: 1.8rem; font-weight: 700; text-align: center; padding: 0.5rem; }
+  .duration-old { color: #f44336; }
+  .duration-new { color: #4caf50; }
+</style>
+</head>
+<body>
+  <h1>🧙 Wizard Test — v1.4.1</h1>
+  <p class="subtitle">Diálogo de prueba · 3 segmentos · <span class="badge-fix">FIX MP3 CONCAT</span></p>
+
+  <div class="info-box" style="border-left: 3px solid #4caf50;">
+    <strong>Propósito:</strong> Verificar que ffmpeg concat produce la duración total correcta.<br>
+    <strong>Plugin:</strong> <code>xiaomi-voicedesign</code> v1.4.1<br>
+    <strong>Comando:</strong> <code>/vd dialogue lord-of-the-rings:: A wizard is never late... || russian-heavy:: Da. In Russia, we say... || female-soft:: Shhh... let them argue...</code><br>
+    <strong>Fix:</strong> <code>Buffer.concat()</code> → <code>ffmpeg -f concat -c copy</code>
+  </div>
+
+  <!-- COMPARACIÓN DURACIÓN -->
+  <h2 class="section-title vd">⏱️ Comparación de duración</h2>
+  <div class="comparison">
+    <div class="card" style="border-left: 3px solid #f44336;">
+      <div class="card-header"><div><div class="voice-name">❌ Antes (v1.4.0)</div></div></div>
+      <div class="duration-big duration-old">9.28 s</div>
+      <div class="voice-style" style="text-align:center;">
+        Solo la duración del primer segmento.<br>
+        El player se queda pillado ahí<br>
+        aunque el audio se reproduce entero.
+      </div>
+    </div>
+    <div class="card" style="border-left: 3px solid #4caf50;">
+      <div class="card-header"><div><div class="voice-name">✅ Después (v1.4.1)</div></div></div>
+      <div class="duration-big duration-new">28.27 s</div>
+      <div class="voice-style" style="text-align:center;">
+        Duración real concatenada.<br>
+        ffmpeg remux con <code>-c copy</code>.<br>
+        Sin pérdida de calidad.
+      </div>
+    </div>
+  </div>
+
+  <!-- GUIÓN -->
+  <h2 class="section-title vd">📜 Guión</h2>
+  <div style="overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+    <thead>
+      <tr>
+        <th style="text-align:left;padding:0.6rem 0.8rem;background:rgba(255,255,255,0.05);color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.1);">#</th>
+        <th style="text-align:left;padding:0.6rem 0.8rem;background:rgba(255,255,255,0.05);color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.1);">Persona</th>
+        <th style="text-align:left;padding:0.6rem 0.8rem;background:rgba(255,255,255,0.05);color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.1);">Texto</th>
+        <th style="text-align:left;padding:0.6rem 0.8rem;background:rgba(255,255,255,0.05);color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.1);">Duración</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--muted);">1</td>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);"><span class="tag tag-lotr">lord-of-the-rings</span></td>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);">"A wizard is never late. Nor is he early. He arrives precisely when he means to."</td>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);">9.28 s</td>
+      </tr>
+      <tr>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--muted);">2</td>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);"><span class="tag tag-russian">russian-heavy</span></td>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);">"Da. In Russia, we say same thing. But we also add: if you late, you buy vodka for everyone."</td>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);">7.36 s</td>
+      </tr>
+      <tr>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--muted);">3</td>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);"><span class="tag tag-female">female-soft</span></td>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);">"[Whispering] Shhh... let them argue. I just want to enjoy the quiet moment between their words."</td>
+        <td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);">11.52 s</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- AUDIO COMPLETO -->
+  <h2 class="section-title vd">🎵 Audio final</h2>
+  <div class="card" style="border-left:3px solid #4caf50;">
+    <div class="card-header">
+      <div>
+        <div class="voice-name">Wizard Test — completo</div>
+        <div class="voice-lang">3 segmentos · ffmpeg concat</div>
+      </div>
+      <span class="tag tag-fix">183 KB</span>
+    </div>
+    <audio controls preload="none" src="assets/voicedesign-audio/wizard-test-dialogue.mp3"></audio>
+    <div class="voice-style" style="margin-top:0.3rem;font-size:0.78rem;color:#888;">
+      🗓️ 2026-06-24 13:53 · Plugin v1.4.1 · ffmpeg concat<br>
+      ⏱️ Duración: <strong>28.27 s</strong> (vs 9.28 s antes del fix)
+    </div>
+  </div>
+
+  <!-- SEGMENTOS -->
+  <h2 class="section-title vd">🔊 Segmentos individuales</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="card" style="border-left:3px solid #ce93d8;">
+      <div class="card-header"><div><div class="voice-name"><code>lord-of-the-rings</code></div><div class="voice-lang">Gandalf · 9.28 s</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem;">
+        "A wizard is never late. Nor is he early. He arrives precisely when he means to."<br>
+        <strong>Archivo:</strong> <code>wizard-test-seg1-gandalf.mp3</code> (57 KB)
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/wizard-test-seg1-gandalf.mp3"></audio>
+    </div>
+    <div class="card" style="border-left:3px solid #64b5f6;">
+      <div class="card-header"><div><div class="voice-name"><code>russian-heavy</code></div><div class="voice-lang">Ruso · 7.36 s</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem;">
+        "Da. In Russia, we say same thing. But we also add: if you late, you buy vodka for everyone."<br>
+        <strong>Archivo:</strong> <code>wizard-test-seg2-russian.mp3</code> (48 KB)
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/wizard-test-seg2-russian.mp3"></audio>
+    </div>
+    <div class="card" style="border-left:3px solid #f06292;">
+      <div class="card-header"><div><div class="voice-name"><code>female-soft</code></div><div class="voice-lang">ASMR · 11.52 s</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem;">
+        "[Whispering] Shhh... let them argue. I just want to enjoy the quiet moment between their words."<br>
+        <strong>Archivo:</strong> <code>wizard-test-seg3-asmr.mp3</code> (79 KB)
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/wizard-test-seg3-asmr.mp3"></audio>
+    </div>
+  </div>
+
+  <!-- CÓMO SE HIZO -->
+  <h2 class="section-title vd">⚙️ Proceso (verificación manual)</h2>
+  <div class="log-box" style="line-height:1.6;">
+<span style="color:#4fc3f7;">$</span> curl -X POST api.xiaomimimo.com/v1/chat/completions → seg1.mp3 (9.28s)
+<span style="color:#4fc3f7;">$</span> curl -X POST api.xiaomimimo.com/v1/chat/completions → seg2.mp3 (7.36s)
+<span style="color:#4fc3f7;">$</span> curl -X POST api.xiaomimimo.com/v1/chat/completions → seg3.mp3 (11.52s)
+
+<span style="color:#4fc3f7;">$</span> echo "file 'seg1.mp3'" &gt; concat.txt
+<span style="color:#4fc3f7;">$</span> echo "file 'seg2.mp3'" &gt;&gt; concat.txt
+<span style="color:#4fc3f7;">$</span> echo "file 'seg3.mp3'" &gt;&gt; concat.txt
+
+<span style="color:#4fc3f7;">$</span> ffmpeg -f concat -safe 0 -i concat.txt -c copy -y dialogue.mp3
+  <span style="color:#81c784;">→ dialogue.mp3 (28.27s ✅)</span>
+  <span style="color:#888;">size=183KiB time=00:00:28.20 bitrate=53.2kbits/s</span>
+  </div>
+
+  <div class="api-ref">
+    📦 <strong>Plugin:</strong> <a href="https://github.com/denisneuf/openclaw-xiaomi-mimo-tts-voicedesign">xiaomi-voicedesign</a> v1.4.1<br>
+    🐛 <strong>Fix:</strong> ffmpeg concat con <code>-c copy</code> en vez de <code>Buffer.concat()</code><br>
+    🗺️ <strong>Pages:</strong> <a href="https://denisneuf.github.io/openclaw-xiaomi-mimo-tts-voicedesign/dialogue-wizardtest.html">https://denisneuf.github.io/openclaw-xiaomi-mimo-tts-voicedesign/dialogue-wizardtest.html</a>
+  </div>
+
+  <div class="footer">Canvas creado 2026-06-24 · Test de verificación v1.4.1</div>
+</body>
+</html>
