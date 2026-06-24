@@ -1,5 +1,6 @@
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
-import { appendFileSync, writeFileSync, readFileSync, mkdirSync } from "node:fs";
+import { appendFileSync, writeFileSync, readFileSync, mkdirSync, unlinkSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import os from "node:os";
 
@@ -199,25 +200,55 @@ export default definePluginEntry({
               return { text: `❌ Dialogue failed: ${errors.join("; ")}` };
             }
 
-            // Concatenate MP3: strip ID3v2 from all segments after the first
-            const cleanBuffers = [buffers[0]];
-            for (let i = 1; i < buffers.length; i++) {
-              let b = buffers[i];
-              if (b.length > 10 && b.slice(0, 3).toString() === "ID3") {
-                const size = ((b[6] & 0x7f) << 21) | ((b[7] & 0x7f) << 14) | ((b[8] & 0x7f) << 7) | (b[9] & 0x7f);
-                b = b.subarray(10 + size);
-              }
-              cleanBuffers.push(b);
+            // Concatenate MP3 with ffmpeg for correct duration metadata
+            const tempFiles = [];
+            const ts2 = Date.now();
+            for (let i = 0; i < buffers.length; i++) {
+              const tf = path.join(os.tmpdir(), `vd-dialogue-${ts2}-seg${i}.mp3`);
+              writeFileSync(tf, buffers[i]);
+              tempFiles.push(tf);
             }
 
-            const combined = Buffer.concat(cleanBuffers);
+            const listFile = path.join(os.tmpdir(), `vd-dialogue-${ts2}-list.txt`);
+            const listContent = tempFiles.map(f => `file '${f}'`).join('\n');
+            writeFileSync(listFile, listContent);
+
             const outPath = path.join(outputDir, `${filePrefix}-dialogue.mp3`);
-            writeFileSync(outPath, combined);
+            try {
+              execFileSync("ffmpeg", [
+                "-f", "concat",
+                "-safe", "0",
+                "-i", listFile,
+                "-c", "copy",
+                "-y",
+                outPath
+              ], { stdio: "pipe", timeout: 60_000 });
+            } catch (e) {
+              // fallback: simple concatenation if ffmpeg fails
+              LOG(`dialogue ffmpeg failed, using fallback: ${e.message}`);
+              const cleanBuffers = [buffers[0]];
+              for (let i = 1; i < buffers.length; i++) {
+                let b = buffers[i];
+                if (b.length > 10 && b.slice(0, 3).toString() === "ID3") {
+                  const size = ((b[6] & 0x7f) << 21) | ((b[7] & 0x7f) << 14) | ((b[8] & 0x7f) << 7) | (b[9] & 0x7f);
+                  b = b.subarray(10 + size);
+                }
+                cleanBuffers.push(b);
+              }
+              writeFileSync(outPath, Buffer.concat(cleanBuffers));
+            }
 
-            LOG(`dialogue complete: ${buffers.length} segments, ${combined.length} bytes → ${outPath}`);
+            // Clean up temp files
+            for (const tf of tempFiles) {
+              try { unlinkSync(tf); } catch {}
+            }
+            try { unlinkSync(listFile); } catch {}
 
+            LOG(`dialogue complete: ${buffers.length} segments → ${outPath}`);
+
+            const combinedSize = readFileSync(outPath).length;
             let msg = `✅ Dialogue generated (${buffers.length}/${segments.length} segments)\n`;
-            msg += `📁 ${outPath} (${(combined.length / 1024).toFixed(0)} KB)\n`;
+            msg += `📁 ${outPath} (${(combinedSize / 1024).toFixed(0)} KB)\n`;
             for (let si = 0; si < segFiles.length; si++) {
               msg += `   ${path.basename(segFiles[si])} (${(buffers[si].length / 1024).toFixed(0)} KB)\n`;
             }

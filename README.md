@@ -218,6 +218,17 @@ Logs are **appended** — clear with:
 
 ## Changelog
 
+### v1.4.1 (2026-06-24) — Fix MP3 concatenation in /vd dialogue
+
+**Bug fix:** The `/vd dialogue` command was using `Buffer.concat()` to stitch MP3 segments together,
+keeping only the first segment's ID3 metadata. Players showed the duration of the first segment only,
+even though audio played through all segments.
+
+**Fix:** Uses `ffmpeg` with the concat demuxer (`-c copy`) to produce a properly concatenated MP3
+with correct duration metadata. Falls back to the old concatenation method if ffmpeg is unavailable.
+
+---
+
 ### v1.4.0 (2026-06-24) — Interactive examples gallery
 
 **New features:**
