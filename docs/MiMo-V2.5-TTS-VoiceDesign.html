@@ -594,14 +594,17 @@
     <strong>Ejemplo probado (3 voces):</strong><br>
     <code>/vd dialogue lord-of-the-rings:: Gandalf speaks first. || russian-heavy:: Viktor answers him. || female-soft:: And the lady whispers softly.</code><br>
     3 segmentos, 65 KB<br><br>
-    <strong>Flujo interno:</strong><br>
+    <strong>Flujo interno (v1.4.1+):</strong><br>
     1. <code>fullText.split("||")</code> → partes<br>
     2. Cada parte: <code>indexOf("::")</code> → separa persona del texto<br>
     3. Busca <code>style</code> de la persona en <code>openclaw.json</code><br>
     4. Llama a MiMo API para cada segmento<br>
-    5. Concatena buffers MP3 (limpia ID3 del 2+ segmento)<br>
-    6. Guarda en <code>os.tmpdir()</code> → <code>~/.openclaw/tmp/</code><br>
-    7. Devuelve la ruta del archivo
+    5. Guarda cada segmento como archivo temporal<br>
+    6. <code>ffmpeg -f concat -safe 0 -i list.txt -c copy</code> — remux con metadatos correctos<br>
+    7. Guarda en <code>os.tmpdir()</code> (o <code>--out</code> si se especifica)<br>
+    8. Limpia los temporales<br>
+    <br>
+    <span style="color:#81c784;font-size:0.82rem;">✅ <strong>v1.4.1 fix:</strong> Antes usaba <code>Buffer.concat()</code> — el player mostraba solo la duración del primer segmento. Ahora ffmpeg produce el MP3 con la duración total correcta.</span>
   </div>
 
   <div class="grid">
@@ -616,7 +619,7 @@
       <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
         <strong>Segmento 1 — lord-of-the-rings:</strong> "You have my sword, old friend."<br>
         <strong>Segmento 2 — russian-heavy:</strong> "Da. Is good."<br><br>
-        <span style="color:#81c784;font-size:0.78rem;">✅ Generado con <code>/vd dialogue</code>. Sin curl, sin ffmpeg, sin scripts externos.</span>
+        <span style="color:#81c784;font-size:0.78rem;">✅ Generado con <code>/vd dialogue</code> (v1.4.1 — ffmpeg concat).</span>
       </div>
       <audio controls preload="none" src="assets/voicedesign-audio/dialogue-lotr-vs-russian.mp3"></audio>
       <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 22:05 · Primer diálogo multi-voz exitoso</div>
