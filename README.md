@@ -52,8 +52,6 @@ Start at the gallery page: **[`examples/index.html`](./examples/index.html)**
 |---------|------|---------------|
 | **VoiceDesign Gallery** | [`MiMo-V2.5-TTS-VoiceDesign.html`](./examples/MiMo-V2.5-TTS-VoiceDesign.html) | All voice personas with inline audio samples — pirate, ASMR, Russian accent, Hunan accent, Gandalf-style, etc. |
 | **Multi-voice dialogues** (×8) | [`dialogue-changshajam.html`](./examples/dialogue-changshajam.html) — [CatBar](./examples/dialogue-catbar.html) — [Casting](./examples/dialogue-casting.html) — [Elevator](./examples/dialogue-elevator.html) — [HunanDinner](./examples/dialogue-hunandinner.html) — [IronAnchor](./examples/dialogue-ironanchor.html) — [Vending](./examples/dialogue-vending.html) — [Zoom](./examples/dialogue-zoom.html) | `/vd dialogue` scenes — multiple personas conversing in one audio stream |
-| **Standard TTS overview** | [`MiMo-V2.5-TTS.html`](./examples/MiMo-V2.5-TTS.html) | Built-in preset voices (Moli, Bingtang, Mia, Chloe...) |
-| **Speech-to-text demo** | [`MiMo-V2.5-ASR.html`](./examples/MiMo-V2.5-ASR.html) | ASR transcription samples |
 
 > ℹ️ Audio assets live in [`examples/assets/`](./examples/assets/). Each HTML file references these relative to its own directory.
 
@@ -223,11 +221,9 @@ Logs are **appended** — clear with:
 ### v1.4.0 (2026-06-24) — Interactive examples gallery
 
 **New features:**
-- `examples/` directory with 12 interactive HTML demo pages
+- `examples/` directory with interactive HTML demo pages
 - VoiceDesign gallery showcasing all personas with inline audio players
 - 8 multi-voice dialogue scenes (ChangshaJam, CatBar, Casting, Elevator, HunanDinner, IronAnchor, Vending, Zoom)
-- Standard TTS preset voices overview (8 voices)
-- ASR transcription test results
 - Gallery index page at [`examples/index.html`](./examples/index.html)
 - All audio assets stored with relative paths — HTML pages work standalone in any browser
 
