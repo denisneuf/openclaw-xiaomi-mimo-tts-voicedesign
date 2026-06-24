@@ -220,6 +220,19 @@ Logs are **appended** — clear with:
 
 ## Changelog
 
+### v1.4.0 (2026-06-24) — Interactive examples gallery
+
+**New features:**
+- `examples/` directory with 12 interactive HTML demo pages
+- VoiceDesign gallery showcasing all personas with inline audio players
+- 8 multi-voice dialogue scenes (ChangshaJam, CatBar, Casting, Elevator, HunanDinner, IronAnchor, Vending, Zoom)
+- Standard TTS preset voices overview (8 voices)
+- ASR transcription test results
+- Gallery index page at [`examples/index.html`](./examples/index.html)
+- All audio assets stored with relative paths — HTML pages work standalone in any browser
+
+---
+
 ### v1.1.0 (2026-06-23) — `/vd dialogue` + command docs
 
 **New features:**
