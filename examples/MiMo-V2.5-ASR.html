@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiMo-V2.5-ASR — Pruebas de Transcripción</title>
+<link rel="stylesheet" href="shared.css">
+
+</head>
+<body>
+
+<h1>🎤 Xiaomi MiMo ASR</h1>
+<p class="subtitle">Plugin v2.0.0 — Pruebas de transcripción con audio iMessage · 2026-06-21</p>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot dot-success"></span> Transcripción correcta</div>
+  <div class="legend-item"><span class="legend-dot dot-warn"></span> Transcripción parcial/aceptable</div>
+  <div class="legend-item"><span class="legend-dot dot-error"></span> Transcripción fallida</div>
+</div>
+
+<h2 class="section-title">📋 Pruebas</h2>
+
+<!-- Test 1: Español -->
+<div class="card">
+  <div class="card-header">
+    <span class="test-num">#1 — Español (no soportado)</span>
+    <span class="badge badge-error">FALLÓ</span>
+  </div>
+  <div class="info-row">
+    <span>Formato: .caf (Opus)</span>
+    <span>Duración: 7.38s</span>
+    <span>Language: auto</span>
+    <span>13:34</span>
+  </div>
+  <div class="transcription-box">
+    <div class="label">Transcripción obtenida (basura)</div>
+    <em>"Ora è necessario provare il plugg-in小米 Mimo iSere per aversi funziona."</em>
+    <div class="expected">Esperado: "Hola, esto es una prueba del plugin Xiaomi MiMo ASR para ver si funciona"</div>
+  </div>
+  <audio controls src="assets/asr-audio/espanol-fallo.mp3"></audio>
+</div>
+
+<!-- Test 2: Inglés manual -->
+<div class="card">
+  <div class="card-header">
+    <span class="test-num">#2 — Inglés (A Clockwork Orange)</span>
+    <span class="badge badge-success">CORRECTO</span>
+  </div>
+  <div class="info-row">
+    <span>Formato: .caf (Opus)</span>
+    <span>Duración: 6.86s</span>
+    <span>Language: en</span>
+    <span>14:08</span>
+  </div>
+  <div class="transcription-box">
+    <div class="label">Transcripción</div>
+    "There was me, Alex, and my three droogs sitting down in the Korova Milk Bar."
+    <div class="expected">Cita de A Clockwork Orange — transcripción manual con ffmpeg + curl</div>
+  </div>
+  <audio controls src="assets/asr-audio/ingles-clockwork-orange.mp3"></audio>
+</div>
+
+<!-- Test 3: Inglés LOTR 1 -->
+<div class="card">
+  <div class="card-header">
+    <span class="test-num">#3 — Inglés (LOTR: El Anillo)</span>
+    <span class="badge badge-success">CORRECTO</span>
+  </div>
+  <div class="info-row">
+    <span>Formato: .caf (Opus)</span>
+    <span>Duración: 15.24s</span>
+    <span>Language: auto → en</span>
+    <span>14:10</span>
+  </div>
+  <div class="transcription-box">
+    <div class="label">Transcripción</div>
+    "Never put it on, for the agents of the dark lord will be drawn to its power. Always remember, Frodo, the ring is trying to get back to its master. It wants to be found."
+    <div class="expected">Gandalf a Frodo — transcripción manual</div>
+  </div>
+  <audio controls src="assets/asr-audio/ingles-anillo.mp3"></audio>
+</div>
+
+<!-- Test 4: Auto-transcripción -->
+<div class="card">
+  <div class="card-header">
+    <span class="test-num">#4 — Inglés (Auto-transcripción)</span>
+    <span class="badge badge-success">AUTO ✅</span>
+  </div>
+  <div class="info-row">
+    <span>Formato: .caf (Opus)</span>
+    <span>Duración: 15.08s</span>
+    <span>tools.media.audio: enabled</span>
+    <span>14:19</span>
+  </div>
+  <div class="transcription-box">
+    <div class="label">Transcripción automática</div>
+    "But the ring was not in the island. He had lost it. It was gone. His screech sent a shiver down Bilbo's back, though he did not yet understand what had happened."
+    <div class="expected">Gollum/Sméagol y el Anillo — SIN intervención manual</div>
+  </div>
+  <audio controls src="assets/asr-audio/ingles-auto-transcripcion.mp3"></audio>
+</div>
+
+<h2 class="section-title">⚙️ Configuración final</h2>
+<div class="card">
+<div class="config-box">
+{<br>
+&nbsp;&nbsp;"tools": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"media": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"audio": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"enabled": <span style="color:#4caf50">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"echoTranscript": <span style="color:#4caf50">true</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"language": <span style="color:#ff9800">"auto"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"models": [{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"provider": <span style="color:#4fc3f7">"xiaomi-mimo-asr"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"model": <span style="color:#4fc3f7">"mimo-v2.5-asr"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+}
+</div>
+</div>
+
+<h2 class="section-title">📌 Formato del plugin index.mjs</h2>
+<div class="card">
+<div class="config-box">
+<span style="color:#4fc3f7">import</span> { execFile } <span style="color:#4fc3f7">from</span> <span style="color:#ff9800">"node:child_process"</span>;<br>
+<span style="color:#4fc3f7">import</span> { writeFile, unlink, readFile } <span style="color:#4fc3f7">from</span> <span style="color:#ff9800">"node:fs/promises"</span>;<br>
+<br>
+<span style="color:#888">// v2.0.0: Auto-convierte .caf, .opus, .ogg, .flac, .aac, .m4a, .amr → WAV 16kHz mono</span><br>
+<span style="color:#888">// via ffmpeg antes de enviar a la API de MiMo</span>
+</div>
+</div>
+
+<h2 class="section-title">⚠️ Limitaciones</h2>
+<div class="card" style="border-color: #ff9800;">
+  <p><strong>Idiomas:</strong> Solo chino (zh) e inglés (en). Español, francés, japonés, etc. no funcionan.</p>
+  <p style="margin-top:0.5rem"><strong>iMessage transient:</strong> Los audios de iMessage expiran en 2 min si no se pulsa "Keep" — el Mac mini puede no recibirlos.</p>
+  <p style="margin-top:0.5rem"><strong>Rate limit:</strong> La API de MiMo tiene rate limiting agresivo (~3 llamadas seguidas → 429).</p>
+</div>
+
+  <div class="api-ref">
+    📖 <strong>API Reference:</strong> <a href="https://mimo.mi.com/models/mimo-v2.5-asr" target="_blank">https://mimo.mi.com/models/mimo-v2.5-asr</a>
+  </div>
+
+</body>
+</html>

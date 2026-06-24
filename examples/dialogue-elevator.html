@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Ascensor — Diálogo multi-voz</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .tag-default { background: rgba(158,158,158,0.2); color: #bdbdbd; }
+  .tag-lotr { background: rgba(156,39,176,0.2); color: #ce93d8; }
+  .tag-pirate { background: rgba(255,111,0,0.2); color: #ff6f00; }
+  .tag-russian { background: rgba(33,150,243,0.2); color: #64b5f6; }
+  .tag-female { background: rgba(233,30,99,0.2); color: #f06292; }
+  .tag-true { background: rgba(255,152,0,0.2); color: #ffb74d; }
+  .tag-false { background: rgba(76,175,80,0.2); color: #81c784; }
+  .log-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 0.8rem; font-family: monospace; font-size: 0.78rem; line-height: 1.5; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  .log-key { color: #4fc3f7; }
+  .log-str { color: #aed581; }
+  .log-num { color: #ffb74d; }
+  .script-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .script-table th { text-align: left; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.05); color: var(--muted); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .script-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
+  .script-table .seg-num { color: var(--muted); width: 2rem; text-align: center; }
+  .flow-step { margin: 0.5rem 0; display: flex; align-items: flex-start; gap: 0.6rem; }
+  .flow-step .num { background: var(--accent); color: #000; border-radius: 50%; width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; margin-top: 0.1rem; }
+  .flow-step .content { flex: 1; }
+</style>
+</head>
+<body>
+  <h1>🛗 El Ascensor</h1>
+  <p class="subtitle">Diálogo multi-voz con <code>/vd dialogue</code> · 4 personajes + narrador · 7 segmentos</p>
+
+  <div class="info-box">
+    <strong>Comando:</strong> <code>/vd dialogue persona:: texto || persona:: texto || ...</code><br>
+    <strong>Voces:</strong> <span class="tag tag-default">default-test</span>
+    <span class="tag tag-lotr">lord-of-the-rings</span>
+    <span class="tag tag-pirate">pirate-captain</span>
+    <span class="tag tag-russian">russian-heavy</span>
+    <span class="tag tag-female">female-soft</span><br>
+    <strong>Canvas:</strong> <code>~/.openclaw/canvas/MiMo-V2.5-TTS-Dialogue-Elevator.html</code><br>
+    <strong>Plugin:</strong> <code>xiaomi-voicedesign</code> v1.1.0
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ESCENARIO -->
+  <!-- ============================================================ -->
+  <h2 class="section-title vd">🎬 Escenario</h2>
+  <p class="subtitle">Un ascensor de oficina un martes cualquiera. Se para entre los pisos 5 y 6. Dentro: un iluminado, un impaciente, un barman ruso en día libre, una chica relajada y un narrador invisible que lo cuenta todo.</p>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
+    <div class="card" style="border-left: 3px solid #bdbdbd;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">default-test</code></div><div class="voice-lang">🎙️ Narrador</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">Voz neutra y cálida. Marca la situación absurda sin juicio.</div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#bdbdbd;">DEFAULT_STYLE · opt: false</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #ce93d8;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">lord-of-the-rings</code></div><div class="voice-lang">🧙 El iluminado</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">Voz grave y profunda. Todo tiene un significado cósmico — hasta un ascensor roto.</div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#ce93d8;">opt: true (persona)</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #ff6f00;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">pirate-captain</code></div><div class="voice-lang">🏴‍☠️ El impaciente</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">Voz ronca y fanfarrona. Llega tarde a una reunión y no le importa quién se interponga.</div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#ff6f00;">opt: false</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #64b5f6;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">russian-heavy</code></div><div class="voice-lang">🪆 El pragmático</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">Acento ruso, seco. El que siempre lleva vodka encima. Para todo hay solución: esperar.</div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#64b5f6;">opt: false</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #f06292;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">female-soft</code></div><div class="voice-lang">🎧 La que lo disfruta</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">Voz ASMR, susurrante. Para ella, el ascensor roto es un respiro del mundo digital.</div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#f06292;">opt: false</div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- GUIÓN -->
+  <!-- ============================================================ -->
+  <h2 class="section-title vd">📜 Guión</h2>
+  <p class="subtitle">7 segmentos, 4 voces + narrador. Una comedia de ascensor.</p>
+
+  <div style="overflow-x: auto;">
+  <table class="script-table">
+    <thead>
+      <tr>
+        <th class="seg-num">#</th>
+        <th style="width: 10rem;">Persona</th>
+        <th>Papel</th>
+        <th>Texto</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="seg-num">1</td>
+        <td><span class="tag tag-default">default-test</span></td>
+        <td>Narrador</td>
+        <td><em>"Four people. One elevator. Floors three through eight. That's all it took to create the longest ten minutes of their lives."</em></td>
+      </tr>
+      <tr>
+        <td class="seg-num">2</td>
+        <td><span class="tag tag-lotr">lord-of-the-rings</span></td>
+        <td>Iluminado</td>
+        <td><em>"This is no accident, my friends. The universe has brought us together. There are no coincidences — only destiny with a broken door mechanism."</em></td>
+      </tr>
+      <tr>
+        <td class="seg-num">3</td>
+        <td><span class="tag tag-pirate">pirate-captain</span></td>
+        <td>Impaciente</td>
+        <td><em>"Destiny? I've got a meeting in twelve minutes! Someone kick this door open before I start charging by the second!"</em></td>
+      </tr>
+      <tr>
+        <td class="seg-num">4</td>
+        <td><span class="tag tag-russian">russian-heavy</span></td>
+        <td>Pragmático</td>
+        <td><em>"Is fine. I have vodka in my flask. We wait. You panic, you make it worse. Sit."</em></td>
+      </tr>
+      <tr>
+        <td class="seg-num">5</td>
+        <td><span class="tag tag-female">female-soft</span></td>
+        <td>Disfrutona</td>
+        <td><em>"Honestly? I kind of like it. No phones, no emails... just five strangers breathing together in the dark."</em></td>
+      </tr>
+      <tr>
+        <td class="seg-num">6</td>
+        <td><span class="tag tag-lotr">lord-of-the-rings</span></td>
+        <td>Iluminado (cierra)</td>
+        <td><em>"You see? The elevator chose us. When these doors open, we will emerge... different."</em></td>
+      </tr>
+      <tr>
+        <td class="seg-num">7</td>
+        <td><span class="tag tag-pirate">pirate-captain</span></td>
+        <td>Impaciente (remata)</td>
+        <td><em>"We'll emerge LATE, that's what we'll emerge!"</em></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- AUDIO FINAL -->
+  <!-- ============================================================ -->
+  <h2 class="section-title vd">🎵 Audio final</h2>
+
+  <div class="card" style="border-left: 3px solid #9c27b0;">
+    <div class="card-header">
+      <div>
+        <div class="voice-name">El Ascensor — Diálogo completo</div>
+        <div class="voice-lang"><code>/vd dialogue</code> · 7 segmentos · 4 voces + narrador</div>
+      </div>
+      <span class="tag tag-plugin">590 KB</span>
+    </div>
+    <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+      <strong>7 segmentos · 4 voces + narrador ·</strong> Narrador → Iluminado → Impaciente → Pragmático → Disfrutona → Iluminado → Impaciente
+      <br><br>
+      <span style="color:#81c784;font-size:0.78rem;">✅ Generado con script Node.js. 7 llamadas a MiMo, 590 KB concatenados.</span>
+    </div>
+    <audio controls preload="none" src="assets/voicedesign-audio/elevator-dialogue.mp3"></audio>
+    <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">
+      🗓️ 2026-06-23 20:26 · 7 llamadas a MiMo, 590 KB concatenados
+      <br>
+      📁 <code style="font-size:0.72rem;color:#888;word-break:break-all;">elevator-dialogue.mp3</code>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SEGMENTOS INDIVIDUALES -->
+  <!-- ============================================================ -->
+  <h2 class="section-title vd">🔊 Segmentos individuales</h2>
+  <p class="subtitle">Cada segmento se genera con una llamada independiente a la API de MiMo y se guarda como un archivo MP3 separado en el directorio del canvas.</p>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr;">
+    <!-- 1: Narrador -->
+    <div class="card" style="border-left: 3px solid #bdbdbd;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Segmento 1 · <code class="vd-code">default-test</code></div>
+          <div class="voice-lang">🎙️ Narrador</div>
+        </div>
+        <span class="tag tag-false">62 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto completo:</strong><br>
+        "Four people. One elevator. Floors three through eight. That's all it took to create the longest ten minutes of their lives."
+        <br><br>
+        <strong>Style:</strong> <code>DEFAULT_STYLE</code> del plugin<br>
+        <strong>optimizeTextPreview:</strong> <span style="color:#81c784;">false</span><br>
+        <strong>Archivo:</strong> <code>elevator-01-narrator.mp3</code><br>
+        📁 <code style="font-size:0.72rem;color:#888;word-break:break-all;">elevator-01-narrator.mp3</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/elevator-01-narrator.mp3"></audio>
+    </div>
+
+    <!-- 2: Iluminado -->
+    <div class="card" style="border-left: 3px solid #ce93d8;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Segmento 2 · <code class="vd-code">lord-of-the-rings</code></div>
+          <div class="voice-lang">🧙 Iluminado</div>
+        </div>
+        <span class="tag tag-true">116 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto completo:</strong><br>
+        "This is no accident, my friends. The universe has brought us together. There are no coincidences — only destiny with a broken door mechanism."
+        <br><br>
+        <strong>Style:</strong> <code>"Old, deep, gravelly voice. Slow and deliberate... authority and hidden power."</code><br>
+        <strong>optimizeTextPreview:</strong> <span style="color:#ff9800;">true</span> (nivel persona)<br>
+        <strong>Archivo:</strong> <code>elevator-02-illuminated.mp3</code><br>
+        📁 <code style="font-size:0.72rem;color:#888;word-break:break-all;">elevator-02-illuminated.mp3</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/elevator-02-illuminated.mp3"></audio>
+    </div>
+
+    <!-- 3: Impaciente -->
+    <div class="card" style="border-left: 3px solid #ff6f00;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Segmento 3 · <code class="vd-code">pirate-captain</code></div>
+          <div class="voice-lang">🏴‍☠️ Impaciente</div>
+        </div>
+        <span class="tag tag-false">56 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto completo:</strong><br>
+        "Destiny? I've got a meeting in twelve minutes! Someone kick this door open before I start charging by the second!"
+        <br><br>
+        <strong>Style:</strong> <code>"Rough pirate voice, deep and gravelly, with a swaggering tone"</code><br>
+        <strong>optimizeTextPreview:</strong> <span style="color:#81c784;">false</span><br>
+        <strong>Archivo:</strong> <code>elevator-03-impatient.mp3</code><br>
+        📁 <code style="font-size:0.72rem;color:#888;word-break:break-all;">elevator-03-impatient.mp3</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/elevator-03-impatient.mp3"></audio>
+    </div>
+
+    <!-- 4: Pragmático -->
+    <div class="card" style="border-left: 3px solid #64b5f6;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Segmento 4 · <code class="vd-code">russian-heavy</code></div>
+          <div class="voice-lang">🪆 Pragmático</div>
+        </div>
+        <span class="tag tag-false">47 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto completo:</strong><br>
+        "Is fine. I have vodka in my flask. We wait. You panic, you make it worse. Sit."
+        <br><br>
+        <strong>Style:</strong> <code>"Heavy Russian accent, gruff middle-aged male, blunt and matter-of-fact."</code><br>
+        <strong>optimizeTextPreview:</strong> <span style="color:#81c784;">false</span><br>
+        <strong>Archivo:</strong> <code>elevator-04-pragmatic.mp3</code><br>
+        📁 <code style="font-size:0.72rem;color:#888;word-break:break-all;">elevator-04-pragmatic.mp3</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/elevator-04-pragmatic.mp3"></audio>
+    </div>
+
+    <!-- 5: Disfrutona -->
+    <div class="card" style="border-left: 3px solid #f06292;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Segmento 5 · <code class="vd-code">female-soft</code></div>
+          <div class="voice-lang">🎧 Disfrutona</div>
+        </div>
+        <span class="tag tag-false">114 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto completo:</strong><br>
+        "Honestly? I kind of like it. No phones, no emails... just five strangers breathing together in the dark."
+        <br><br>
+        <strong>Style:</strong> <code>"Young female, extreme close-up with a binaural, ear-to-ear ASMR feel..."</code><br>
+        <strong>optimizeTextPreview:</strong> <span style="color:#81c784;">false</span><br>
+        <strong>Archivo:</strong> <code>elevator-05-enjoyer.mp3</code><br>
+        📁 <code style="font-size:0.72rem;color:#888;word-break:break-all;">elevator-05-enjoyer.mp3</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/elevator-05-enjoyer.mp3"></audio>
+    </div>
+
+    <!-- 6: Iluminado cierra -->
+    <div class="card" style="border-left: 3px solid #ce93d8;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Segmento 6 · <code class="vd-code">lord-of-the-rings</code></div>
+          <div class="voice-lang">🧙 Iluminado (cierra)</div>
+        </div>
+        <span class="tag tag-true">169 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto completo:</strong><br>
+        "You see? The elevator chose us. When these doors open, we will emerge... different."
+        <br><br>
+        <strong>Style:</strong> <code>"Old, deep, gravelly voice. Slow and deliberate... authority and hidden power."</code><br>
+        <strong>optimizeTextPreview:</strong> <span style="color:#ff9800;">true</span> (nivel persona)<br>
+        <strong>Archivo:</strong> <code>elevator-06-destiny.mp3</code><br>
+        📁 <code style="font-size:0.72rem;color:#888;word-break:break-all;">elevator-06-destiny.mp3</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/elevator-06-destiny.mp3"></audio>
+    </div>
+
+    <!-- 7: Impaciente remata -->
+    <div class="card" style="border-left: 3px solid #ff6f00;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Segmento 7 · <code class="vd-code">pirate-captain</code></div>
+          <div class="voice-lang">🏴‍☠️ Impaciente (remata)</div>
+        </div>
+        <span class="tag tag-false">27 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto completo:</strong><br>
+        "We'll emerge LATE, that's what we'll emerge!"
+        <br><br>
+        <strong>Style:</strong> <code>"Rough pirate voice, deep and gravelly, with a swaggering tone"</code><br>
+        <strong>optimizeTextPreview:</strong> <span style="color:#81c784;">false</span><br>
+        <strong>Archivo:</strong> <code>elevator-07-late.mp3</code><br>
+        📁 <code style="font-size:0.72rem;color:#888;word-break:break-all;">elevator-07-late.mp3</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/elevator-07-late.mp3"></audio>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- DOCUMENTACIÓN TÉCNICA -->
+  <!-- ============================================================ -->
+  <h2 class="section-title vd">⚙️ Cómo funciona</h2>
+
+  <h3 class="section-title" style="font-size:1rem;">📎 1. El comando</h3>
+  <div class="log-box" style="line-height:1.6;">
+<strong style="color:#4fc3f7;">/vd dialogue</strong> <span style="color:#aaa;">default-test::</span><span style="color:#aed581;">Four people. One elevator...</span> <span style="color:#aaa;">|| lord-of-the-rings::</span><span style="color:#ce93d8;">This is no accident...</span> <span style="color:#aaa;">|| ...</span>
+</div>
+
+  <h3 class="section-title" style="font-size:1rem;">🔧 2. Parseo interno</h3>
+  <p class="subtitle">El plugin divide el texto del comando con dos reglas simples:</p>
+  <div class="log-box">
+1. <span class="log-str">fullText.split("||")</span>  →  ["default-test:: Four people...", " lord-of-the-rings:: This is no...", ...]
+2. Cada parte: <span class="log-str">indexOf("::")</span>  →  separa <strong>persona</strong> del <strong>texto</strong>
+</div>
+
+  <h3 class="section-title" style="font-size:1rem;">🌐 3. Fetch a MiMo por segmento</h3>
+  <div class="log-box" style="line-height:1.6;">
+<span class="log-key">Para cada segmento:</span>
+  1. Busca <span class="log-str">personas[seg.persona].providers.xiaomi-voicedesign.style</span> en <span style="color:#888;">openclaw.json</span>
+  2. Hace <span class="log-str">fetch()</span> a <span style="color:#888;">api.xiaomimimo.com/v1/chat/completions</span>
+  3. Payload:
+     { <span class="log-key">messages</span>: [
+       { <span class="log-key">role</span>: <span class="log-str">"user"</span>, <span class="log-key">content</span>: <span class="log-str">"&lt;style&gt;"</span> },
+       { <span class="log-key">role</span>: <span class="log-str">"assistant"</span>, <span class="log-key">content</span>: <span class="log-str">"&lt;texto&gt;"</span> }
+     ], <span class="log-key">audio</span>: { <span class="log-key">format</span>: <span class="log-str">"mp3"</span>, <span class="log-key">optimize_text_preview</span>: <span class="log-num">&lt;por segmento&gt;</span> } }
+
+     <span style="color:#888;">optimize_text_preview varía según la persona:</span>
+     ├─  <strong>01-narrator</strong>:    <span class="log-num">false</span> (default-test sin override)
+     ├─  <strong>02-illuminated</strong>: <span class="log-num">true</span>  (lord-of-the-rings, <span style="color:#ff9800;">override true</span>)
+     ├─  <strong>03-impatient</strong>:  <span class="log-num">false</span> (pirate-captain)
+     ├─  <strong>04-pragmatic</strong>:  <span class="log-num">false</span> (russian-heavy)
+     ├─  <strong>05-enjoyer</strong>:    <span class="log-num">false</span> (female-soft)
+     ├─  <strong>06-destiny</strong>:    <span class="log-num">true</span>  (lord-of-the-rings, <span style="color:#ff9800;">override true</span>)
+     └─  <strong>07-late</strong>:       <span class="log-num">false</span> (pirate-captain)
+
+  4. Recibe <span class="log-str">response.json().choices[0].message.audio.data</span> (base64)
+  5. Decodifica: <span class="log-str">Buffer.from(audioData, "base64")</span>
+</div>
+
+  <h3 class="section-title" style="font-size:1rem;">🧩 4. Concatenación de MP3</h3>
+  <p class="subtitle">Cada segmento devuelve un MP3 independiente. Para unirlos sin cortes:</p>
+  <div class="log-box" style="line-height:1.6;">
+1. El <span style="color:#4fc3f7;">primer buffer</span> se incluye tal cual.
+2. Para <span style="color:#4fc3f7;">cada buffer siguiente</span>:
+   - Si empieza con <span class="log-str">"ID3"</span> (header ID3v2), se salta:
+     <span style="color:#888;">const size = (b[6]&lt;&lt;21) | (b[7]&lt;&lt;14) | (b[8]&lt;&lt;7) | b[9];</span>
+     <span style="color:#888;">b = b.subarray(10 + size);</span>
+3. <span class="log-str">Buffer.concat(cleanBuffers)</span>  →  MP3 sin metadatos duplicados → audio seamless.
+</div>
+
+  <h3 class="section-title" style="font-size:1rem;">💾 5. Archivos de salida</h3>
+  <div class="log-box" style="line-height:1.6;">
+<span style="color:#4fc3f7;">Para cada segmento:</span>
+  <span class="log-key">writeFileSync</span>(<span class="log-str">"~/.openclaw/canvas/MiMo-V2.5-TTS-VoiceDesign/elevator-{id}.mp3"</span>, buf)
+  ├─  <strong>elevator-01-narrator.mp3</strong>     (62 KB)  — default-test
+  │   📁 <code>elevator-01-narrator.mp3</code>
+  ├─  <strong>elevator-02-illuminated.mp3</strong> (116 KB) — lord-of-the-rings
+  │   📁 <code>elevator-02-illuminated.mp3</code>
+  ├─  <strong>elevator-03-impatient.mp3</strong>   (56 KB)  — pirate-captain
+  │   📁 <code>elevator-03-impatient.mp3</code>
+  ├─  <strong>elevator-04-pragmatic.mp3</strong>   (47 KB)  — russian-heavy
+  │   📁 <code>elevator-04-pragmatic.mp3</code>
+  ├─  <strong>elevator-05-enjoyer.mp3</strong>     (114 KB) — female-soft
+  │   📁 <code>elevator-05-enjoyer.mp3</code>
+  ├─  <strong>elevator-06-destiny.mp3</strong>     (169 KB) — lord-of-the-rings
+  │   📁 <code>elevator-06-destiny.mp3</code>
+  └─  <strong>elevator-07-late.mp3</strong>        (27 KB)  — pirate-captain
+      📁 <code>elevator-07-late.mp3</code>
+
+<span style="color:#4fc3f7;">Diálogo completo (concatenado):</span>
+  <span class="log-key">writeFileSync</span>(<span class="log-str">"~/.openclaw/canvas/MiMo-V2.5-TTS-VoiceDesign/elevator-dialogue.mp3"</span>, combined)
+  └─  <strong>elevator-dialogue.mp3</strong> (590 KB) — 7 segmentos, headers ID3 limpiados
+      📁 <code>elevator-dialogue.mp3</code>
+
+<span style="color:#4fc3f7;">Convención de nombres:</span>
+  Nombre base: <span class="log-str">"elevator"</span> + <span style="color:#888;">"-"</span> + <span class="log-str">"{id}"</span> + <span class="log-str">".mp3"</span>
+
+  <span style="color:#888;">const segments = [</span>
+  <span style="color:#888;">  { id: "01-narrator",</span>    <span style="color:#888;">persona: "default-test" },</span>
+  <span style="color:#888;">  { id: "02-illuminated",</span>  <span style="color:#888;">persona: "lord-of-the-rings" },</span>
+  <span style="color:#888;">  { id: "03-impatient",</span>    <span style="color:#888;">persona: "pirate-captain" },</span>
+  <span style="color:#888;">  { id: "04-pragmatic",</span>    <span style="color:#888;">persona: "russian-heavy" },</span>
+  <span style="color:#888;">  { id: "05-enjoyer",</span>      <span style="color:#888;">persona: "female-soft" },</span>
+  <span style="color:#888;">  { id: "06-destiny",</span>      <span style="color:#888;">persona: "lord-of-the-rings" },</span>
+  <span style="color:#888;">  { id: "07-late",</span>         <span style="color:#888;">persona: "pirate-captain" },</span>
+  <span style="color:#888;">  ];</span>
+
+  Escribe: <span class="log-str">`elevator-${seg.id}.mp3`</span>
+  → elevator-01-narrator.mp3, elevator-02-illuminated.mp3, ...
+  → elevator-dialogue.mp3 (sin id, concatenación completa)
+
+  📁 Ruta final por segmento:
+  <span class="log-str">~/.openclaw/canvas/MiMo-V2.5-TTS-VoiceDesign/elevator-{id}.mp3</span>
+
+<strong>Ruta base:</strong> <span style="color:#888;">~/.openclaw/canvas/MiMo-V2.5-TTS-VoiceDesign/</span>
+<strong>Ruta absoluta:</strong> <span style="color:#888;"></span>
+<strong>Copiado al canvas:</strong> No se copian — se escriben directamente ahí desde el script generador.
+<strong>Referencia en HTML:</strong> Los players apuntan con rutas relativas:
+  <span class="log-str">src="assets/voicedesign-audio/elevator-01-narrator.mp3"</span>
+</div>
+
+  <h3 class="section-title" style="font-size:1rem;">🔄 6. Flujo completo (del comando al audio)</h3>
+  <div class="flow-step">
+    <div class="num">1</div>
+    <div class="content"><strong>1. Definir guión:</strong> se preparan los 7 segmentos con persona, texto y papel en el script <code>/tmp/generate-elevator.mjs</code></div>
+  </div>
+  <div class="flow-step">
+    <div class="num">2</div>
+    <div class="content"><strong>2. Ejecutar script:</strong> <code>node generate-elevator.mjs</code> — lee estilos de <code>openclaw.json</code>, llama a MiMo 7 veces</div>
+  </div>
+  <div class="flow-step">
+    <div class="num">3</div>
+    <div class="content"><strong>3. Fetch ×7:</strong> cada llamada devuelve un buffer MP3 (base64 → <code>Buffer.from</code>)</div>
+  </div>
+  <div class="flow-step">
+    <div class="num">4</div>
+    <div class="content"><strong>4. Guardar individuales:</strong> <code>writeFileSync(elevator-{id}.mp3, buf)</code> — cada segmento a su archivo</div>
+  </div>
+  <div class="flow-step">
+    <div class="num">5</div>
+    <div class="content"><strong>5. Concatenar:</strong> limpiar ID3 de seg 2-7, <code>Buffer.concat(clean)</code>, guardar como <code>elevator-dialogue.mp3</code></div>
+  </div>
+  <div class="flow-step">
+    <div class="num">6</div>
+    <div class="content"><strong>6. Crear canvas:</strong> HTML con players que apuntan a <code>MiMo-V2.5-TTS-VoiceDesign/elevator-{id}.mp3</code> (rutas relativas)</div>
+  </div>
+
+  <div class="api-ref">
+    📖 <strong>API:</strong> <a href="https://mimo.mi.com/models/mimo-v2.5-tts-voicedesign" target="_blank">mimo.mi.com/models/mimo-v2.5-tts-voicedesign</a><br>
+    📦 <strong>Repo:</strong> <a href="https://github.com/denisneuf/openclaw-xiaomi-mimo-tts-voicedesign" target="_blank">github.com/denisneuf/openclaw-xiaomi-mimo-tts-voicedesign</a><br>
+    🖥️ <strong>Log:</strong> <code>/tmp/voicedesign-exec-log.txt</code>
+  </div>
+
+  <div class="footer">
+    Canvas creado 2026-06-23 · Plugin xiaomi-voicedesign v1.1.0 · Diálogo "El Ascensor"
+  </div>
+</body>
+</html>

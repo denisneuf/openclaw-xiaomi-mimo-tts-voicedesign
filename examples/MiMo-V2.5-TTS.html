@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiMo-V2.5-TTS — Voces Integradas</title>
+<link rel="stylesheet" href="shared.css">
+
+</head>
+<body>
+  <h1>🎤 MiMo-V2.5-TTS</h1>
+  <p class="subtitle">Voces integradas — 8 voces fijas del provider nativo de Xiaomi</p>
+
+  <div class="provider-info">
+    <strong>Provider:</strong> <code>xiaomi</code> · <strong>Endpoint:</strong> <code>https://api.xiaomimimo.com/v1/chat/completions</code><br>
+    <strong>Modelo:</strong> <code>mimo-v2.5-tts</code> · <strong>Formato:</strong> WAV / MP3 / PCM16<br>
+    <strong>Auth:</strong> <code>XIAOMI_API_KEY</code> (en <code>~/.openclaw/.env</code>) · <strong>Tool:</strong> <code>tts</code> de OpenClaw
+  </div>
+
+  <div class="rules-box">
+    <strong>⚠️ REGLAS:</strong>
+    <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+      <li>Idiomas disponibles: <strong>SOLO zh-CN (chino) y en-US (inglés)</strong></li>
+      <li>No hay español ni ningún otro idioma. Si te piden otro idioma, negarlo explícitamente.</li>
+      <li>Detectar el idioma del texto ANTES de llamar al tool <code>tts</code></li>
+      <li>Elegir voz según idioma detectado (china para chino, inglesa para inglés)</li>
+      <li>Por defecto: <code>mimo_default</code> para chino, <code>Chloe</code> para inglés</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title">🇨🇳 Voces Chinas (zh-CN)</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="voice-name"><code>mimo_default</code></div>
+          <div class="voice-lang">zh-CN · Voz por defecto</div>
+          <div class="voice-style"></div>
+        </div>
+        <span class="badge badge-default">default</span>
+      </div>
+      <audio controls preload="none" src="assets/tts-audio/tts-mimo_default.wav"></audio>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">冰糖 <code>冰糖</code></div>
+          <div class="voice-lang">zh-CN · Femenina</div>
+          <div class="voice-style">活泼少女 (Lively girl)</div>
+        </div>
+        <span class="badge badge-female">female</span>
+      </div>
+      <audio controls preload="none" src="assets/tts-audio/tts-冰糖.wav"></audio>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">茉莉 <code>茉莉</code></div>
+          <div class="voice-lang">zh-CN · Femenina</div>
+          <div class="voice-style">知性女声 (Elegant woman)</div>
+        </div>
+        <span class="badge badge-female">female</span>
+      </div>
+      <audio controls preload="none" src="assets/tts-audio/tts-茉莉.wav"></audio>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">苏打 <code>苏打</code></div>
+          <div class="voice-lang">zh-CN · Masculina</div>
+          <div class="voice-style">阳光少年 (Sunny youth)</div>
+        </div>
+        <span class="badge badge-male">male</span>
+      </div>
+      <audio controls preload="none" src="assets/tts-audio/tts-苏打.wav"></audio>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">白桦 <code>白桦</code></div>
+          <div class="voice-lang">zh-CN · Masculina</div>
+          <div class="voice-style">成熟男声 (Mature man)</div>
+        </div>
+        <span class="badge badge-male">male</span>
+      </div>
+      <audio controls preload="none" src="assets/tts-audio/tts-白桦.wav"></audio>
+    </div>
+  </div>
+
+  <h2 class="section-title">🇺🇸 Voces Inglesas (en-US)</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Mia <code>Mia</code></div>
+          <div class="voice-lang">en-US · Female</div>
+          <div class="voice-style">Lively girl</div>
+        </div>
+        <span class="badge badge-female">female</span>
+      </div>
+      <audio controls preload="none" src="assets/tts-audio/tts-Mia.wav"></audio>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Chloe <code>Chloe</code></div>
+          <div class="voice-lang">en-US · Female</div>
+          <div class="voice-style">Sweet Dreamy</div>
+        </div>
+        <span class="badge badge-female">female</span>
+      </div>
+      <audio controls preload="none" src="assets/tts-audio/tts-Chloe.wav"></audio>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Milo <code>Milo</code></div>
+          <div class="voice-lang">en-US · Male</div>
+          <div class="voice-style">Sunny boy</div>
+        </div>
+        <span class="badge badge-male">male</span>
+      </div>
+      <audio controls preload="none" src="assets/tts-audio/tts-Milo.wav"></audio>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Dean <code>Dean</code></div>
+          <div class="voice-lang">en-US · Male</div>
+          <div class="voice-style">Steady Gentle</div>
+        </div>
+        <span class="badge badge-male">male</span>
+      </div>
+      <audio controls preload="none" src="assets/tts-audio/tts-Dean.wav"></audio>
+    </div>
+  </div>
+
+  
+  <div class="api-ref">
+    📖 <strong>API Reference:</strong> <a href="https://mimo.mi.com/models/mimo-v2.5-tts" target="_blank">https://mimo.mi.com/models/mimo-v2.5-tts</a>
+  </div>
+
+  <div class="footer">
+    Generado el 2026-06-21 · MiMo-V2.5-TTS · OpenClaw
+  </div>
+</body>
+</html>

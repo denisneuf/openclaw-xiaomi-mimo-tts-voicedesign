@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cat in a Bar — Test diálogo</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .tag-default { background: rgba(158,158,158,0.2); color: #bdbdbd; }
+  .tag-russian { background: rgba(33,150,243,0.2); color: #64b5f6; }
+  .tag-female { background: rgba(233,30,99,0.2); color: #f06292; }
+  .tag-false { background: rgba(76,175,80,0.2); color: #81c784; }
+  .log-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 0.8rem; font-family: monospace; font-size: 0.78rem; line-height: 1.5; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  .log-key { color: #4fc3f7; }
+  .log-str { color: #aed581; }
+  .log-num { color: #ffb74d; }
+</style>
+</head>
+<body>
+  <h1>🐱 Cat in a Bar</h1>
+  <p class="subtitle">Test rápido · 3 segmentos · plugin v1.2.0</p>
+
+  <div class="info-box">
+    <strong>Comando:</strong> <code>/vd dialogue default-test:: A cat walked into a bar. The bartender did not blink. || russian-heavy:: Is not first time. Cat comes every Tuesday. || female-soft:: Aww, look at its little paws. I think I'm going to cry.</code><br>
+    <strong>Plugin:</strong> <code>xiaomi-voicedesign</code> v1.2.0 — guarda segmentos individuales automáticamente
+  </div>
+
+  <!-- GUIÓN -->
+  <h2 class="section-title vd">📜 Guión</h2>
+  <div style="overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+    <thead>
+      <tr><th style="text-align:left;padding:0.6rem 0.8rem;background:rgba(255,255,255,0.05);color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.1);">#</th><th style="text-align:left;padding:0.6rem 0.8rem;background:rgba(255,255,255,0.05);color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.1);">Persona</th><th style="text-align:left;padding:0.6rem 0.8rem;background:rgba(255,255,255,0.05);color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.1);">Texto</th></tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--muted);">1</td><td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);"><span class="tag tag-default">default-test</span></td><td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);">"A cat walked into a bar. The bartender did not blink."</td></tr>
+      <tr><td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--muted);">2</td><td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);"><span class="tag tag-russian">russian-heavy</span></td><td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);">"Is not first time. Cat comes every Tuesday."</td></tr>
+      <tr><td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--muted);">3</td><td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);"><span class="tag tag-female">female-soft</span></td><td style="padding:0.6rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);">"Aww, look at its little paws. I think I'm going to cry."</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- AUDIO COMPLETO -->
+  <h2 class="section-title vd">🎵 Audio final</h2>
+  <div class="card" style="border-left:3px solid #9c27b0;">
+    <div class="card-header">
+      <div>
+        <div class="voice-name">Cat in a Bar — completo</div>
+        <div class="voice-lang">3 segmentos</div>
+      </div>
+      <span class="tag tag-false">93 KB</span>
+    </div>
+    <audio controls preload="none" src="assets/voicedesign-audio/cat-bar-dialogue.mp3"></audio>
+    <div class="voice-style" style="margin-top:0.3rem;font-size:0.78rem;color:#888;">
+      🗓️ 2026-06-23 20:40 · Plugin v1.2.0 (segmentos individuales)<br>
+      📁 <code style="font-size:0.72rem;color:#888;word-break:break-all;">cat-bar-dialogue.mp3</code>
+    </div>
+  </div>
+
+  <!-- SEGMENTOS -->
+  <h2 class="section-title vd">🔊 Segmentos</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="card" style="border-left:3px solid #bdbdbd;">
+      <div class="card-header"><div><div class="voice-name"><code>default-test</code></div><div class="voice-lang">Narrador</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem;">
+        "A cat walked into a bar. The bartender did not blink."<br>
+        <strong>Archivo:</strong> <code>cat-bar-seg1-bartender.mp3</code><br>
+        📁 <code style="font-size:0.7rem;color:#888;word-break:break-all;">cat-bar-seg1-bartender.mp3</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/cat-bar-seg1-bartender.mp3"></audio>
+    </div>
+    <div class="card" style="border-left:3px solid #64b5f6;">
+      <div class="card-header"><div><div class="voice-name"><code>russian-heavy</code></div><div class="voice-lang">Barman</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem;">
+        "Is not first time. Cat comes every Tuesday."<br>
+        <strong>Archivo:</strong> <code>cat-bar-seg2-russian.mp3</code><br>
+        📁 <code style="font-size:0.7rem;color:#888;word-break:break-all;">cat-bar-seg2-russian.mp3</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/cat-bar-seg2-russian.mp3"></audio>
+    </div>
+    <div class="card" style="border-left:3px solid #f06292;">
+      <div class="card-header"><div><div class="voice-name"><code>female-soft</code></div><div class="voice-lang">Clienta</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem;">
+        "Aww, look at its little paws. I think I'm going to cry."<br>
+        <strong>Archivo:</strong> <code>cat-bar-seg3-aww.mp3</code><br>
+        📁 <code style="font-size:0.7rem;color:#888;word-break:break-all;">cat-bar-seg3-aww.mp3</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/cat-bar-seg3-aww.mp3"></audio>
+    </div>
+  </div>
+
+  <!-- OUTPUT DEL COMANDO -->
+  <h2 class="section-title vd">🖥️ Output esperado del plugin v1.2.0</h2>
+  <div class="log-box" style="line-height:1.6;">
+✅ Dialogue generated (3/3 segments)
+📁 /tmp/voicedesign-dialogue-{ts}.mp3 (93 KB)
+   voicedesign-dialogue-{ts}-seg1-default_test.mp3 (29 KB)
+   voicedesign-dialogue-{ts}-seg2-russian_heavy.mp3 (25 KB)
+   voicedesign-dialogue-{ts}-seg3-female_soft.mp3 (39 KB)
+  </div>
+
+  <div class="api-ref">
+    📦 <strong>Plugin:</strong> <a href="https://github.com/denisneuf/openclaw-xiaomi-mimo-tts-voicedesign">xiaomi-voicedesign</a> v1.2.0<br>
+    🔊 <strong>Canvas:</strong> <code>~/.openclaw/canvas/MiMo-V2.5-TTS-Dialogue-CatBar.html</code>
+  </div>
+  <div class="footer">Canvas creado 2026-06-23 · Test rápido plugin v1.2.0</div>
+</body>
+</html>

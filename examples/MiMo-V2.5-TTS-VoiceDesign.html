@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiMo-V2.5-TTS-VoiceDesign — Plugin</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .tag-plugin { background: rgba(76,175,80,0.2); color: #4caf50; }
+  .tag-before { background: rgba(244,67,54,0.2); color: #f44336; }
+  .tag-after { background: rgba(76,175,80,0.2); color: #81c784; }
+  .tag-true { background: rgba(255,152,0,0.2); color: #ffb74d; }
+  .tag-false { background: rgba(76,175,80,0.2); color: #81c784; }
+  .tag-female { background: rgba(233,30,99,0.2); color: #f06292; }
+  .tag-russian { background: rgba(33,150,243,0.2); color: #64b5f6; }
+  .tag-lotr { background: rgba(156,39,176,0.2); color: #ce93d8; }
+  .log-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 0.8rem; font-family: monospace; font-size: 0.78rem; line-height: 1.5; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  .log-key { color: #4fc3f7; }
+  .log-str { color: #aed581; }
+  .log-num { color: #ffb74d; }
+  .comparison { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .comparison > .card { flex: 1; min-width: 280px; }
+  .badge-fix { display: inline-block; background: #4caf50; color: #000; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; }
+  .persona-section { margin-top: 2rem; }
+  .voice-style code { font-size: 0.78rem; }
+</style>
+</head>
+<body>
+  <h1>🎭 MiMo-V2.5-TTS-VoiceDesign</h1>
+  <p class="subtitle">Plugin personalizado vía <code>xiaomi-voicedesign</code></p>
+
+  <!-- INFO BOX -->
+  <div class="info-box">
+    <strong>Plugin:</strong> <code>xiaomi-voicedesign</code><br>
+    <strong>GitHub:</strong> <a href="https://github.com/denisneuf/openclaw-xiaomi-mimo-tts-voicedesign">github.com/denisneuf/openclaw-xiaomi-mimo-tts-voicedesign</a><br>
+    <strong>Ruta:</strong> <code>~/.openclaw/plugins/xiaomi-voicedesign/</code><br>
+    <strong>Modelo:</strong> <code>mimo-v2.5-tts-voicedesign</code><br>
+    <strong>Uso diario:</strong> <code>/tts persona &lt;nombre&gt;</code> → <code>/vd optimize [on|off]</code> → texto
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- QUICK REFERENCE -->
+  <!-- ============================================================ -->
+  <h2 class="section-title vd">⚡ Referencia rápida</h2>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="card">
+      <div class="card-header"><div><div class="voice-name">🎮 Comandos runtime</div></div></div>
+      <div style="padding:0.6rem;font-size:0.82rem;">
+        <code><strong>/tts persona &lt;nombre&gt;</strong></code> — Cambia la persona activa al instante. Sin reiniciar.<br>
+        <code>/tts persona lord-of-the-rings</code><br>
+        <code>/tts persona russian-heavy</code><br>
+        <code>/tts persona female-soft</code><br><br>
+        <code><strong>/vd optimize &lt;on|off|status&gt;</strong></code> — Controla <code>optimize_text_preview</code>.<br>
+        <code>/vd optimize on</code> — MiMo puede modificar el texto<br>
+        <code>/vd optimize off</code> — Texto exacto, sin cambios<br>
+        <code>/vd optimize status</code> — Ver estado actual<br>
+        <span style="color:#ff9800;font-size:0.75rem;">⚠️ El toggle se pierde al reiniciar el gateway</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div><div class="voice-name">⚙️ Config en openclaw.json</div></div></div>
+      <div style="padding:0.6rem;">
+        <div class="log-box" style="margin:0;">{
+  <span class="log-str">"persona"</span>: <span class="log-str">"female-soft"</span>,
+  <span class="log-str">"personas"</span>: {
+    <span class="log-str">"lord-of-the-rings"</span>: { <span class="log-str">"optimizeTextPreview"</span>: <span class="log-num">true</span> },
+    <span class="log-str">"russian-heavy"</span>: { <span class="log-str">"style"</span>: <span class="log-str">"Heavy Russian..."</span> },
+    <span class="log-str">"female-soft"</span>: { <span class="log-str">"style"</span>: <span class="log-str">"Young female..."</span> }
+  },
+  <span class="log-str">"providers"</span>: {
+    <span class="log-str">"xiaomi-voicedesign"</span>: {
+      <span class="log-str">"optimizeTextPreview"</span>: <span class="log-num">false</span>
+    }
+  }
+}</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title">📊 Precedencia de <code>optimizeTextPreview</code></h3>
+  <div class="info-box" style="border-left: 3px solid #9c27b0;">
+    <ol>
+      <li><strong><code>providerOverrides</code></strong> — override vía framework</li>
+      <li><strong><code>/vd optimize on|off</code></strong> — toggle runtime del plugin</li>
+      <li><strong><code>req.personaConfig?.optimizeTextPreview</code></strong> — desde la persona activa en <code>openclaw.json</code></li>
+      <li><strong><code>req.providerConfig?.optimizeTextPreview</code></strong> — desde el provider global en <code>openclaw.json</code></li>
+      <li><strong><code>true</code></strong> — fallback por defecto</li>
+    </ol>
+    <strong>Ejemplo:</strong> JSON tiene <code>false</code> global + <code>/vd optimize on</code> → gana el toggle → <code>true</code>
+  </div>
+
+  <!-- PERSONA: DEFAULT TEST (sin style) -->
+  <!-- ============================================================ -->
+  <div class="persona-section">
+  <h2 class="section-title vd">🧪 Persona: <code>default-test</code> (sin style)</h2>
+  <p class="subtitle">Esta persona NO tiene <code>style</code> definido. El plugin usa el <code>DEFAULT_STYLE</code> interno:</p>
+  <p class="subtitle"><code>"Warm, natural, and friendly voice with clear pronunciation and conversational pacing."</code></p>
+
+  <div class="grid">
+    <div class="card" style="border-left: 3px solid #9c27b0;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Default Style <span class="vd-code">default-test</span></div>
+          <div class="voice-lang"><code>DEFAULT_STYLE</code> del plugin · sin style en JSON</div>
+        </div>
+        <span class="tag tag-plugin">63 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "This is the default voice. No custom style. Just warm, natural, clear. This is what you hear when no persona defines a voice."
+        <br><br>
+        <strong>Style enviado:</strong><br>
+        <code style="color:#9c27b0;">"Warm, natural, and friendly voice with clear pronunciation and conversational pacing."</code>
+        <br><br>
+        <span style="color:#81c784;font-size:0.78rem;">✅ El DEFAULT_STYLE se activa cuando ninguna fuente (persona ni provider global) define un style.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/default-test-warm.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 20:52</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PERSONA: LORD OF THE RINGS -->
+  <!-- ============================================================ -->
+  <div class="persona-section">
+  <h2 class="section-title vd">🎭 Persona: <code>lord-of-the-rings</code></h2>
+  <p class="subtitle">Style: <code>"Old, deep, gravelly voice. Slow and deliberate, with weight behind every word. Sounds ancient and tired, but still carries authority and hidden power."</code></p>
+  <p class="subtitle" style="color:#ce93b8;">Config: <code>"optimizeTextPreview": true</code> a nivel de persona</p>
+
+  <div class="grid">
+    <!-- After fix (160 KB) - wizard text, resolveConfig fix working -->
+    <div class="card" style="border-left: 3px solid #4caf50;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">✅ Después del fix <span class="vd-code">lord-of-the-rings</span></div>
+          <div class="voice-lang">Style real de la persona · <code>optimizeTextPreview</code>: default</div>
+        </div>
+        <span class="tag tag-after">160 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "A wizard is never late, nor is he early. He arrives precisely when he means to. The fires of Mount Doom burn deep beneath the earth, and shadows lengthen across Middle-earth."
+        <br><br>
+        <strong>Style enviado:</strong><br>
+        <code style="color:#81c784;">"Old, deep, gravelly voice. Slow and deliberate, with weight behind every word. Sounds ancient and tired, but still carries authority and hidden power."</code>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/lord-of-the-rings-wizard.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 13:16 · resolveConfig fix aplicado</div>
+    </div>
+
+    <!-- Mithrandir (211 KB) - optfalse, texto exacto -->
+    <div class="card" style="border-left: 3px solid #4caf50;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Mithrandir <span class="vd-code">lord-of-the-rings</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: false</code> — texto exacto</div>
+        </div>
+        <span class="tag tag-false">211 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "Call me Mithrandir, if you wish. Olorín, if you know my name in the Gardens of Lórien. But to the mortals of the Shire, I am simply Gandalf. The old man with the pointed hat and the grey beard who shows up with his fireworks at the Bagginses' parties. If only it were all as simple as a night of colorful lights."
+        <br><br>
+        <strong>Style:</strong> <code>"Old, deep, gravelly voice..."</code><br>
+        <span style="color:#81c784;font-size:0.78rem;">✅ <code>false</code> — texto exacto.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/lord-of-the-rings-mithrandir-optfalse.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 16:29</div>
+    </div>
+
+    <!-- Lone Flame (280 KB) - opttrue from persona -->
+    <div class="card" style="border-left: 3px solid #ff9800;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Lone Flame <span class="vd-code">lord-of-the-rings</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: true</code> (nivel persona)</div>
+        </div>
+        <span class="tag tag-true">280 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "And still, I carry on. Not because I am brave—no, I have known true fear, the kind that chills the marrow and steals the breath—but because there is no one else. The Istari were sent to guide, but Saruman fell to pride, Radagast lost himself to the beasts of the wild, and the Blue Wizards vanished into the East long ago. I am the last. The lone flame in the gathering dark."
+        <br><br>
+        <strong>Style:</strong> <code>"Old, deep, gravelly voice..."</code><br>
+        <span style="color:#ff9800;font-size:0.78rem;">⚠️ <code>true</code> resuelto desde la persona en el JSON.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/lord-of-the-rings-lone-flame.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 20:10</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- Flow: cómo funciona el TTS -->
+  <!-- ============================================================ -->
+  <!-- ============================================================ -->
+  <!-- PERSONA: RUSSIAN HEAVY -->
+  <!-- ============================================================ -->
+  <div class="persona-section">
+  <h2 class="section-title vd">🇷🇺 Persona: <code>russian-heavy</code></h2>
+  <p class="subtitle">Style: <code>"Heavy Russian accent, gruff middle-aged male, blunt and matter-of-fact."</code></p>
+
+  <div class="grid">
+    <!-- Iron Anchor (optfalse from global) -->
+    <div class="card" style="border-left: 3px solid #4caf50;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">The Iron Anchor <span class="vd-code">russian-heavy</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: false</code></div>
+        </div>
+        <span class="tag tag-false">166 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "This place, \"The Iron Anchor,\" it is not for tourists. It is for men who have lost everything and are looking for the bottom of a glass to find it again. The floor is sticky with thirty years of spilled vodka and broken dreams. The air is thick with cheap tobacco and the sour smell of hopelessness. It is my office."
+        <br><br>
+        <strong>Style:</strong> <code>"Heavy Russian accent, gruff middle-aged male, blunt and matter-of-fact."</code><br>
+        <span style="color:#81c784;font-size:0.78rem;">✅ <code>false</code> — texto exacto.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/russian-heavy-iron-anchor.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 14:15 · Test con resolveConfig fix + optfalse global</div>
+    </div>
+
+    <!-- Veteran (optfalse via /tts persona) -->
+    <div class="card" style="border-left: 3px solid #4caf50;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Veteran <span class="vd-code">russian-heavy</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: false</code></div>
+        </div>
+        <span class="tag tag-false">186 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "My face is not what you would call… friendly. It is a map of old wars. A broken nose from a fistfight in the 90s, a scar across my eyebrow from a man who thought a broken bottle was a fair weapon. My hands are like shovels, and my knuckles are permanently swollen. They are my tools. They speak a language everyone understands. I wear a black leather jacket, even in summer. It holds my authority. It holds my flask."
+        <br><br>
+        <strong>Style:</strong> <code>"Heavy Russian accent, gruff middle-aged male, blunt and matter-of-fact."</code><br>
+        <span style="color:#81c784;font-size:0.78rem;">✅ Cambio vía <code>/tts persona russian-heavy</code> — sin reiniciar.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/russian-heavy-veteran.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 17:01</div>
+    </div>
+
+    <!-- Philosopher (opttrue via toggle) -->
+    <div class="card" style="border-left: 3px solid #ff9800;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Philosopher <span class="vd-code">russian-heavy</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: true</code></div>
+        </div>
+        <span class="tag tag-true">203 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "My job is to maintain order. But here, order is a relative term. I am not a policeman. I am a philosopher of the street. I can see a man's soul in the way he clutches his glass. I can see a fight in the way two men look at each other over their beers. I give them one warning. A look. My eyes are like chips of ice from Lake Baikal. They understand."
+        <br><br>
+        <strong>Style:</strong> <code>"Heavy Russian accent, gruff middle-aged male, blunt and matter-of-fact."</code><br>
+        <span style="color:#ff9800;font-size:0.78rem;">⚠️ <code>true</code> vía <code>/vd optimize on</code> (toggle runtime).</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/russian-heavy-philosopher-opttrue.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 17:07 · Toggle runtime /vd optimize on</div>
+    </div>
+
+  </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PERSONA: FEMALE SOFT -->
+  <!-- ============================================================ -->
+  <div class="persona-section">
+  <h2 class="section-title vd">🎧 Persona: <code>female-soft</code></h2>
+  <p class="subtitle">Style: <code>"Young female, extreme close-up with a binaural, ear-to-ear ASMR feel. Audible breathing, subtle swallowing, and soft natural lip sounds. She speaks very slowly, creating a deeply relaxing and immersive experience."</code></p>
+
+  <div class="grid">
+    <!-- ASMR whisper (optfalse) -->
+    <div class="card" style="border-left: 3px solid #e91e63;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">ASMR Whisper <span class="vd-code">female-soft</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: false</code></div>
+        </div>
+        <span class="tag tag-false">139 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "[Whispering in your ear] Shhh... just relax, come a little closer. I'm right here beside you now. Breathe slowly and gently, and let your mind drift, as if you're sinking into warm water."
+        <br><br>
+        <strong>Style:</strong> <code>"Young female, extreme close-up with a binaural, ear-to-ear ASMR feel..."</code><br>
+        <span style="color:#81c784;font-size:0.78rem;">✅ <code>false</code> — texto exacto.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/female-soft-asmr-corregido.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 16:57 · Corregido (primer intento usó lord-of-the-rings por error)</div>
+    </div>
+
+    <!-- Seduction (opttrue via toggle) -->
+    <div class="card" style="border-left: 3px solid #ff9800;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Seduction <span class="vd-code">female-soft</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: true</code></div>
+        </div>
+        <span class="tag tag-true">636 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "I let my robe slip just a fraction from my shoulder, a slow, deliberate accident as I leaned in, close enough that my breath ghosted warm over your ear... 'Are you truly going to waste this entire evening on discipline,' I purred..."
+        <br><br>
+        <strong>Style:</strong> <code>"Young female, extreme close-up with a binaural, ear-to-ear ASMR feel..."</code><br>
+        <span style="color:#ff9800;font-size:0.78rem;">⚠️ <code>true</code> vía <code>/vd optimize on</code> + <code>/tts persona female-soft</code>.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/female-soft-seduction-opttrue.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 17:15 · Texto largo (636 KB)</div>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PERSONA: HUNAN ACCENT -->
+  <!-- ============================================================ -->
+  <div class="persona-section">
+  <h2 class="section-title vd">🏮 Persona: <code>hunan-accent</code></h2>
+  <p class="subtitle">Style: <code>"湖南口音非常浓重的中年男性。朴实憨厚，带着无奈和心酸。语速较慢，微醺感。"</code></p>
+
+  <div class="comparison">
+    <div class="card" style="border-left: 3px solid #4caf50;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">湖南口音 <span class="vd-code">hunan-accent</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: false</code> — texto exacto</div>
+        </div>
+        <span class="tag tag-false">163 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "你讲么子？我吐口痰你就跟我过不去？..."
+        <br><br>
+        <strong>Style:</strong> <code>"湖南口音非常浓重的中年男性..."</code><br>
+        <span style="color:#81c784;font-size:0.78rem;">✅ <code>false</code> — texto exacto.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/hunan-accent-optfalse.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 21:08</div>
+    </div>
+
+    <div class="card" style="border-left: 3px solid #ff9800;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">湖南口音 <span class="vd-code">hunan-accent</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: true</code> — API puede modificar</div>
+        </div>
+        <span class="tag tag-true">244 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "你讲么子？我吐口痰你就跟我过不去？..."
+        <br><br>
+        <strong>Style:</strong> <code>"湖南口音非常浓重的中年男性..."</code><br>
+        <span style="color:#ff9800;font-size:0.78rem;">⚠️ <code>true</code> via <code>/vd optimize on</code>.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/hunan-accent-opttrue.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 21:12</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- LOG DE LLAMADAS A LA API -->
+  <!-- ============================================================ -->
+  <!-- ============================================================ -->
+  <!-- BUGS -->
+  <!-- ============================================================ -->
+  <h2 class="section-title vd">🔧 Bugs corregidos (2026-06-22)</h2>
+
+  <div class="info-box" style="border-left: 3px solid #2196f3;">
+    <strong>🐛 Bug 1: resolveConfig no miraba la persona activa</strong><br>
+    Solo buscaba <code>rawConfig[PROVIDER_ID].style</code> (el provider global).<br>
+    <strong>Fix:</strong> Ahora busca <code>rawConfig.personas[activePersona].providers.xiaomi-voicedesign</code> y mergea con el global (persona gana). Pasa todos los campos extra.<br><br>
+    <strong>🐛 Bug 2: optimizeTextPreview no se pasaba de la config</strong><br>
+    <code>resolveConfig</code> retornaba solo <code>{ model, style }</code>.<br>
+    <strong>Fix:</strong> Ahora copia todos los campos del merge config.<br><br>
+    <strong>🐛 Bug 3: synthesize no leía optimizeTextPreview de personaConfig</strong><br>
+    Con <code>/tts persona</code>, el style se resolvía vía <code>req.personaConfig?.style</code>, pero <code>optimizeTextPreview</code> no tenía el mismo fallback.<br>
+    <strong>Fix:</strong> Añadido <code>req.personaConfig?.optimizeTextPreview</code> a la precedencia.
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PERSONA: HUNAN NIECE -->
+  <!-- ============================================================ -->
+  <div class="persona-section">
+  <h2 class="section-title vd">👧 Persona: <code>hunan-niece</code></h2>
+  <p class="subtitle">Style: <code>"湖南口音的小女孩，大概十岁左右，声音尖细，爱撒娇又爱闹。说话像连珠炮一样快，带着小孩子的任性和娇气。高兴的时候叽叽喳喳，不高兴的时候大喊大叫。"</code></p>
+
+  <div class="grid">
+    <div class="card" style="border-left: 3px solid #ff5722;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">湖南妹子 <span class="vd-code">hunan-niece</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: false</code></div>
+        </div>
+        <span class="tag tag-false">43 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> <span lang="zh">"外婆！外婆！你看他抢我的手机！你快骂他咯！"</span>
+        <br><br>
+        <strong>Style:</strong> <code>"湖南口音的小女孩，大概十岁左右，声音尖细，爱撒娇又爱闹..."</code><br>
+        <span style="color:#81c784;">✅ <code>false</code> — texto exacto.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/hunan-niece-test.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-23 22:39 · Voz chillona de niña</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PERSONA: HUNAN NEPHEW -->
+  <!-- ============================================================ -->
+  <div class="persona-section">
+  <h2 class="section-title vd">👦 Persona: <code>hunan-nephew</code></h2>
+  <p class="subtitle">Style: <code>"湖南口音的小男孩，八九岁的样子，调皮捣蛋，说话带着小孩子的得意和狡黠。语速快，爱插嘴，经常被他外婆追着骂。声音清脆，带着点奶气。"</code></p>
+
+  <div class="grid">
+    <div class="card" style="border-left: 3px solid #e91e63;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">湖南外孙 <span class="vd-code">hunan-nephew</span></div>
+          <div class="voice-lang"><code>optimizeTextPreview: false</code></div>
+        </div>
+        <span class="tag tag-false">51 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> <span lang="zh">"外婆！我又没有惹她咯！是她先抢我的玩具！你不信你问她嘛！"</span>
+        <br><br>
+        <strong>Style:</strong> <code>"湖南口音的小男孩，八九岁的样子，调皮捣蛋..."</code><br>
+        <span style="color:#81c784;">✅ <code>false</code> — texto exacto.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/hunan-nephew-test.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-23 22:41 · Voz traviesa de niño</div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- RESUMEN DE PERSONAS -->
+  <!-- ============================================================ -->
+  <h2 class="section-title vd">🗺️ Personas VoiceDesign</h2>
+
+  <div class="grid">
+    <div class="card" style="border-left: 3px solid #ce93b8;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">lord-of-the-rings</code></div><div class="voice-lang">🎭 ✅ Testeado (3 audios)</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">
+        Old, deep, gravelly voice. Slow and deliberate, with weight behind every word. Sounds ancient and tired, but still carries authority and hidden power.
+      </div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#ce93b8;">optimizeTextPreview: true (persona)</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #64b5f6;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">russian-heavy</code></div><div class="voice-lang">🪆 ✅ Testeado (3 audios)</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">
+        Heavy Russian accent, gruff middle-aged male, blunt and matter-of-fact.
+      </div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#64b5f6;">optimizeTextPreview: hereda de global (false)</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #f06292;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">female-soft</code></div><div class="voice-lang">🎧 ✅ Testeado (2 audios)</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">
+        Young female, extreme close-up with binaural ASMR feel. Audible breathing, subtle swallowing. Speaks very slowly.
+      </div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#f06292;">optimizeTextPreview: hereda de global (false)</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #ff6f00;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name"><code class="vd-code">pirate-captain</code></div>
+          <div class="voice-lang">🏴‍☠️ ✅ Testeado (1 audio)</div>
+        </div>
+        <span class="tag tag-false">64 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Texto:</strong> "All hands on deck! That treasure's mine, and I'll split any man who says otherwise."
+        <br><br>
+        <strong>Style:</strong> <code>"Rough pirate voice, deep and gravelly, with a swaggering tone"</code><br>
+        <span style="color:#81c784;font-size:0.78rem;">✅ <code>false</code> — texto exacto.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/pirate-captain-test.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-23 19:43 · Primer test</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">asmr-female</code></div><div class="voice-lang">🎧 Sin testear</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">
+        High-pitched young female voice, around 240Hz. Soft breathy feminine quality, ASMR binaural.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">voicedesign-young-male</code></div><div class="voice-lang">🧑 Sin testear</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">
+        Young male tone, energetic and bright, slightly playful.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">hunan-accent</code></div><div class="voice-lang">🏮 ✅ Testeado (2 audios)</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">
+        湖南口音非常浓重的中年男性。朴实憨厚，带着无奈和心酸。语速较慢，微醺感。
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">sunyuan</code></div><div class="voice-lang">🌸 Sin testear</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">
+        非常高的音调，少女般甜美清脆的声线。像冰糖一样温柔可爱的女性声音。ASMR双耳。
+      </div>
+    </div>
+    <div class="card" style="border-left: 3px solid #ff5722;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">hunan-niece</code></div><div class="voice-lang">👧 ✅ Testeado (1 audio)</div></div>
+        <span class="tag tag-false">43 KB</span></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">
+        湖南口音的小女孩，大概十岁左右，声音尖细，爱撒娇又爱闹。
+      </div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#ff5722;">optimizeTextPreview: false</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #e91e63;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">hunan-nephew</code></div><div class="voice-lang">👦 ✅ Testeado (1 audio)</div></div>
+        <span class="tag tag-false">51 KB</span></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">
+        湖南口音的小男孩，八九岁的样子，调皮捣蛋，说话带着小孩子的得意和狡黠。
+      </div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#e91e63;">optimizeTextPreview: false</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #9c27b0;">
+      <div class="card-header"><div><div class="voice-name"><code class="vd-code">default-test</code></div><div class="voice-lang">🧪 ✅ Testeado (DEFAULT_STYLE)</div></div></div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;">
+        Sin style — usa el DEFAULT_STYLE del plugin
+      </div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#9c27b0;">Warm, natural, and friendly voice</div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2 class="section-title vd">🔁 Flujo TTS — de mi mensaje al audio</h2>
+  <p class="subtitle">Cómo OpenClaw procesa una llamada TTS paso a paso</p>
+
+  <div class="log-box" style="line-height:2;">
+<span style="color:#4fc3f7;">1. 🛠️  tool: tts(text="...")</span>  ← yo ejecuto el tool
+    ↓
+<span style="color:#4fc3f7;">2. 🔍 OpenClaw resuelve:</span>
+   · Provider TTS activo: <span class="log-str">"xiaomi-voicedesign"</span>
+   · Persona activa: <span class="log-str">"lord-of-the-rings"</span>
+   · De openclaw.json extrae personaConfig: style, optimizeTextPreview
+    ↓
+<span style="color:#4fc3f7;">3. 🧩 Plugin synthesize()</span>
+   · Resuelve style con: providerOverrides → personaConfig → providerConfig → DEFAULT_STYLE
+   · Resuelve optimizeTextPreview con: providerOverrides → /vd optimize → personaConfig → providerConfig → true
+   · Construye payload JSON
+    ↓
+<span style="color:#4fc3f7;">4. 🌐 fetch() → POST api.xiaomimimo.com/v1/chat/completions</span>
+   · Headers: Content-Type: application/json, api-key
+   · Body: { model, messages: [{role:"user",content:style},{role:"assistant",content:texto}], audio: {format:"mp3"} }
+    ↓
+<span style="color:#4fc3f7;">5. 📥 MiMo responde</span>
+   · JSON con choices[0].message.audio.data (base64)
+   · El plugin decodifica: <span class="log-str">Buffer.from(audioData, "base64")</span>
+    ↓
+<span style="color:#4fc3f7;">6. 📤 Plugin devuelve a OpenClaw</span>
+   · { audioBuffer, outputFormat: <span class="log-str">"mp3"</span>, fileExtension: <span class="log-str">".mp3"</span> }
+    ↓
+<span style="color:#4fc3f7;">7. 💾 OpenClaw escribe archivo temporal</span>
+   · Ruta: <span class="log-str">/private/tmp/openclaw/tts-XXXXXX/voice-&lt;timestamp&gt;.mp3</span>
+   · <span class="log-str">/private/tmp</span> es el \$TMPDIR del sistema
+   · <span class="log-str">openclaw/</span> es el subdirectorio de OpenClaw
+   · <span class="log-str">tts-XXXXXX</span> es aleatorio (evita colisiones entre sesiones)
+   · <span class="log-str">voice-&lt;unix_ms&gt;.mp3</span> nombre con timestamp
+    ↓
+<span style="color:#4fc3f7;">8. 🔊 OpenClaw entrega al canal</span>
+   · WebChat: stream directo al navegador
+   · iMessage/Telegram: se envía como attachment
+   · El temporal se <strong>limpia</strong> tras la entrega (excepto si lo copias antes)
+    ↓
+<span style="color:#4fc3f7;">9. ✅ Yo recibo: (spoken) &lt;texto&gt;</span>
+</div>
+
+  <p class="subtitle" style="margin-top:1rem;">
+    <strong>📁 ¿Por qué mp3?</strong> Porque el plugin usa <code>"format": "mp3"</code> por defecto.
+    MiMo soporta mp3 y wav. El mp3 es más pequeño para transmisión.
+    Si se quisiera wav, habría que cambiar <code>req.providerConfig?.format || "mp3"</code> a <code>"wav"</code>.
+  </p>
+  <p class="subtitle">
+    <strong>📁 ¿Por qué /private/tmp/openclaw?</strong> macOS enlaza <code>/tmp</code> → <code>/private/tmp</code>.
+    OpenClaw crea <code>/tmp/openclaw/</code> como su área temporal.
+    Los subdirectorios <code>tts-XXXXXX</code> son generados por <code>fs.mkdtempSync</code>.
+  </p>
+
+  <!-- ============================================================ -->
+  <h2 class="section-title vd">💬 Diálogo multi-persona</h2>
+  <p class="subtitle">Comando <code>/vd dialogue persona:: texto || persona:: texto || ...</code></p>
+
+  <div class="info-box" style="border-left: 3px solid #4caf50;">
+    <strong>Formato:</strong><br>
+    <code>/vd dialogue persona1:: texto || persona2:: texto || persona3:: texto</code><br><br>
+    El comando parsea los segmentos, llama a la API de MiMo para cada uno con el <code>style</code> de la persona correspondiente,
+    y concatena los MP3 en un solo archivo.<br><br>
+    <strong>Ejemplo probado (2 voces):</strong><br>
+    <code>/vd dialogue lord-of-the-rings:: You have my sword, old friend. || russian-heavy:: Da. Is good.</code><br>
+    2 segmentos, 34 KB → <code>~/.openclaw/tmp/voicedesign-dialogue-*.mp3</code><br><br>
+    <strong>Ejemplo probado (3 voces):</strong><br>
+    <code>/vd dialogue lord-of-the-rings:: Gandalf speaks first. || russian-heavy:: Viktor answers him. || female-soft:: And the lady whispers softly.</code><br>
+    3 segmentos, 65 KB<br><br>
+    <strong>Flujo interno:</strong><br>
+    1. <code>fullText.split("||")</code> → partes<br>
+    2. Cada parte: <code>indexOf("::")</code> → separa persona del texto<br>
+    3. Busca <code>style</code> de la persona en <code>openclaw.json</code><br>
+    4. Llama a MiMo API para cada segmento<br>
+    5. Concatena buffers MP3 (limpia ID3 del 2+ segmento)<br>
+    6. Guarda en <code>os.tmpdir()</code> → <code>~/.openclaw/tmp/</code><br>
+    7. Devuelve la ruta del archivo
+  </div>
+
+  <div class="grid">
+    <div class="card" style="border-left: 3px solid #9c27b0;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Diálogo: Gandalf vs Russian</div>
+          <div class="voice-lang"><code>/vd dialogue</code> · 2 segmentos</div>
+        </div>
+        <span class="tag tag-plugin">34 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Segmento 1 — lord-of-the-rings:</strong> "You have my sword, old friend."<br>
+        <strong>Segmento 2 — russian-heavy:</strong> "Da. Is good."<br><br>
+        <span style="color:#81c784;font-size:0.78rem;">✅ Generado con <code>/vd dialogue</code>. Sin curl, sin ffmpeg, sin scripts externos.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/dialogue-lotr-vs-russian.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 22:05 · Primer diálogo multi-voz exitoso</div>
+    </div>
+
+    <div class="card" style="border-left: 3px solid #9c27b0;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Diálogo: Fly vs Nyet</div>
+          <div class="voice-lang"><code>/vd dialogue</code> · 2 segmentos</div>
+        </div>
+        <span class="tag tag-plugin">32 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Segmento 1 — lord-of-the-rings:</strong> "Fly, you fools!"<br>
+        <strong>Segmento 2 — russian-heavy:</strong> "Nyet. I stay and fight."<br><br>
+        <span style="color:#81c784;font-size:0.78rem;">✅ Segundo diálogo exitoso.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/dialogue-fly-vs-nyet.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 22:10</div>
+    </div>
+
+    <div class="card" style="border-left: 3px solid #9c27b0;">
+      <div class="card-header">
+        <div>
+          <div class="voice-name">Diálogo: 3 voces</div>
+          <div class="voice-lang"><code>/vd dialogue</code> · 3 segmentos</div>
+        </div>
+        <span class="tag tag-plugin">65 KB</span>
+      </div>
+      <div class="voice-style" style="font-size:0.82rem;color:#aaa;background:rgba(0,0,0,0.2);padding:0.4rem;border-radius:6px;margin-bottom:0.5rem">
+        <strong>Segmento 1 — lord-of-the-rings:</strong> "Gandalf speaks first."<br>
+        <strong>Segmento 2 — russian-heavy:</strong> "Viktor answers him."<br>
+        <strong>Segmento 3 — female-soft:</strong> "And the lady whispers softly."<br><br>
+        <span style="color:#81c784;font-size:0.78rem;">✅ 3 segmentos, 3 voces distintas. Sin límite de segmentos.</span>
+      </div>
+      <audio controls preload="none" src="assets/voicedesign-audio/dialogue-3-voices.mp3"></audio>
+      <div class="voice-style" style="margin-top:0.4rem;font-size:0.78rem;color:#888">🗓️ 2026-06-22 22:16</div>
+    </div>
+  </div>
+
+  <div class="api-ref">
+    📖 <strong>API:</strong> <a href="https://mimo.mi.com/models/mimo-v2.5-tts-voicedesign" target="_blank">mimo.mi.com/models/mimo-v2.5-tts-voicedesign</a><br>
+    📦 <strong>Repo:</strong> <a href="https://github.com/denisneuf/openclaw-xiaomi-mimo-tts-voicedesign" target="_blank">github.com/denisneuf/openclaw-xiaomi-mimo-tts-voicedesign</a><br>
+    📂 <strong>Audios:</strong> <code>~/.openclaw/canvas/MiMo-V2.5-TTS-VoiceDesign/</code><br>
+    🖥️ <strong>Log:</strong> <code>/tmp/voicedesign-exec-log.txt</code>
+  </div>
+
+  <div class="footer">
+    Canvas rediseñado 2026-06-22 · Plugin xiaomi-voicedesign v2.5 · OpenClaw
+  </div>
+</body>
+</html>
